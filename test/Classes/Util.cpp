@@ -21,8 +21,9 @@ Vec2 convertToTileCoord(TMXTiledMap* tmxMap, const Vec2& position) {
 
 // 判断该位置按该方向是否可移动
 // 
-// @ tmxMap   瓦片地图对象
-// @ position 需要转换的像素坐标
+// @ tmxMap    瓦片地图对象
+// @ position  需要转换的像素坐标
+// @ direction 移动方向
 bool can_move(TMXTiledMap* tmxMap, const Vec2 position, Direction direction) {
     if (!static_cast<bool>(tmxMap)) {
         CCLOG("null map");
@@ -38,16 +39,16 @@ bool can_move(TMXTiledMap* tmxMap, const Vec2 position, Direction direction) {
     // 计算下一刻要到达的位置的坐标
     Vec2 toPos = position;
     if (direction == UP) {
-        toPos.y += 1;
+        toPos.y += 1 + COLLISION_BOX_SIZE;
     }
     else if (direction == DOWN) {
-        toPos.y -= 1;
+        toPos.y -= 1 + COLLISION_BOX_SIZE;
     }
     else if (direction == LEFT) {
-        toPos.x -= 1;
+        toPos.x -= 1 + COLLISION_BOX_SIZE;
     }
     else if (direction == RIGHT) {
-        toPos.x += 1;
+        toPos.x += 1 + COLLISION_BOX_SIZE;
     }
     // 若超出地图边界，直接返回
     if (toPos.x + eps <= 0 || toPos.y + eps <= 0
@@ -72,4 +73,25 @@ bool can_move(TMXTiledMap* tmxMap, const Vec2 position, Direction direction) {
     // id为0则代表为可移动，否则不可移动
     CCLOG("%d", id);
     return static_cast<bool>(!id);
+}
+
+// 通过方向和距离生成Vec2向量
+// 
+// @ direction 移动方向
+// @ distance 距离
+Vec2 generateVec2(Direction direction, int distance) {
+    Vec2 pos;
+    if (direction == UP) {
+        pos.y = distance;
+    }
+    else if (direction == DOWN) {
+        pos.y = -distance;
+    }
+    else if (direction == LEFT) {
+        pos.x = -distance;
+    }
+    else if (direction == RIGHT) {
+        pos.x = distance;
+    }
+    return pos;
 }

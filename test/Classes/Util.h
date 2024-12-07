@@ -1,5 +1,7 @@
 #pragma once
+
 #include "cocos2d.h"
+#include "PlayerData.h"
 #include "Player.h"
 
 USING_NS_CC;
@@ -14,6 +16,13 @@ Vec2 convertToTileCoord(TMXTiledMap* tmxMap, const Vec2& position);
 
 // 判断该位置按该方向是否可移动
 // 
-// @ tmxMap   瓦片地图对象
-// @ position 需要转换的像素坐标
+// @ tmxMap    瓦片地图对象
+// @ position  需要转换的像素坐标
+// @ direction 移动方向
 bool can_move(TMXTiledMap* tmxMap, const Vec2 position, Direction direction);
+
+// 通过方向和距离生成Vec2向量
+// 
+// @ direction 移动方向
+// @ distance 距离
+Vec2 generateVec2(Direction direction, int distance);
