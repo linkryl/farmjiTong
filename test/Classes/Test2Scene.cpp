@@ -18,6 +18,7 @@ std::map<EventKeyboard::KeyCode, bool> keyMap;
 TMXTiledMap* tmxMap;
 bool mouse_down = false;
 
+
 void Test2Scene::update(float delta)
 {
     auto left = cocos2d::EventKeyboard::KeyCode::KEY_A;
@@ -69,6 +70,7 @@ void Test2Scene::update(float delta)
     {
         player->heavy_hit();
     }
+
 }
 
 bool Test2Scene::init()
@@ -85,7 +87,8 @@ bool Test2Scene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    auto map = TMXTiledMap::create("Town2.tmx");
+    auto map = TMXTiledMap::create("Town.tmx");
+    auto map2 = TMXTiledMap::create("Town_Front.tmx");
     if (!map) {
         CCLOG("Failed to load my2.tmx");
         return false;
@@ -105,14 +108,18 @@ bool Test2Scene::init()
     //    }
     //}
 
+
+
     // 设置地图的位置
     map->setPosition(Vec2(0, 0));
+    map2->setPosition(Vec2(0, 0));
 
     // 设置地图的缩放比例
     map->setScale(1.0f);
 
     // 将地图添加到场景中
     this->addChild(map);
+    this->addChild(map2, 80);
 
     auto farmer = Player::create();
     farmer->setTiledMap(map);
@@ -123,7 +130,7 @@ bool Test2Scene::init()
 
     farmer->setScale(1.5);
     //farmer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - farmer->getContentSize().height));
-    farmer->setPosition(Vec2(300, 300));
+    farmer->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
     CCLOG("(%f, %f)", farmer->getPositionX(), farmer->getPositionY());
     auto farmer_parts = farmer->get_parts();
     farmer->go(DOWN);
@@ -149,6 +156,7 @@ bool Test2Scene::init()
         std::cout << "release" << std::endl;
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
 
     return true;
 }

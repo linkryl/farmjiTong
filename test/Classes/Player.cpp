@@ -5,35 +5,21 @@ void PlayerPart::go(const Direction direction)
 {
 	// 基准速度
 	double base_speed = 60;
-	static std::map<int, Vec2> intToMove = { {UP, Vec2(0, speed * base_speed)}, {RIGHT, Vec2(speed * base_speed, 0)},
-	{ DOWN, Vec2(0, -speed * base_speed) }, {LEFT, Vec2(-speed * base_speed, 0)} };
 	// 一共6帧
 	const int upper_limit = 6;
 	// 每一帧动画的间隔
 	const float frameGap = 0.2;
-	int distence = speed * base_speed;
-	for (int i = 1; i <= speed * base_speed; ++i) {
-		Vec2 pos = getPosition();
-		if (direction == UP) {
-			pos.y += i;
-		}
-		else if (direction == DOWN) {
-			pos.y -= i;
-		}
-		else if (direction == LEFT) {
-			pos.x -= i;
-		}
-		else if (direction == RIGHT) {
-			pos.x += i;
-		}
+	int originDistance = speed * base_speed, distance = originDistance;
+	for (int i = 1; i <= originDistance; ++i) {
+		Vec2 pos = modifyVec2(Vec2(getPosition()), direction, i);
 		if (!can_move(getPlayer()->getTiledMap(), pos, direction)) {
-			distence = i - 1;
+			distance = i - 1;
 			break;
 		}
 	}
 	// 动作
-	auto move = MoveBy::create(upper_limit * frameGap, generateVec2(direction, distence));
-	//auto move1 = MoveBy::create(upper_limit * frameGap, -intToMove[direction]);
+	Vec2 moveVec2 = generateVec2(direction, distance);
+	auto moveAction = MoveBy::create(upper_limit * frameGap * distance / originDistance, moveVec2);
 	// 数字映射到string
 	std::map<int, std::string> numToString = { {UP,"walk_up"}, {RIGHT, "walk_right"}, {LEFT, "walk_left"}, {DOWN, "walk_down"} };
 	// 动画
@@ -60,7 +46,7 @@ void PlayerPart::go(const Direction direction)
 	/////////////
 
 	// 动作并行Spawn
-	auto moveSpawn = Spawn::createWithTwoActions(move, animate);
+	auto moveSpawn = Spawn::createWithTwoActions(moveAction, animate);
 
 	const size_t hash_value = partNameHash[part_name] + direction + hashValue[GO];
 	moveSpawn->setTag(hash_value);

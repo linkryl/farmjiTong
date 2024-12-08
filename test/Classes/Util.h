@@ -26,3 +26,10 @@ bool can_move(TMXTiledMap* tmxMap, const Vec2 position, Direction direction);
 // @ direction 移动方向
 // @ distance 距离
 Vec2 generateVec2(Direction direction, int distance);
+
+// 通过方向和距离增量修改Vec2向量
+// 
+// @ vec 需要修改的向量
+// @ direction 移动方向
+// @ distance 距离
+Vec2 modifyVec2(Vec2 vec, Direction direction, int distance);

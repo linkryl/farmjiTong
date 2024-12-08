@@ -95,3 +95,25 @@ Vec2 generateVec2(Direction direction, int distance) {
     }
     return pos;
 }
+
+// 通过方向和距离增量修改Vec2向量
+// 
+// @ vec 需要修改的向量
+// @ direction 移动方向
+// @ distance 距离
+Vec2 modifyVec2(Vec2 vec, Direction direction, int distance) {
+    Vec2 vec1 = vec;
+    if (direction == UP) {
+        vec1.y += distance;
+    }
+    else if (direction == DOWN) {
+        vec1.y -= distance;
+    }
+    else if (direction == LEFT) {
+        vec1.x -= distance;
+    }
+    else if (direction == RIGHT) {
+        vec1.x += distance;
+    }
+    return vec1;
+}
