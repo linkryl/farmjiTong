@@ -16,6 +16,7 @@ struct time_clock
 	int day;//记录游戏中已经经过的日期，这里按照720s一天,30s一小时来计算
 	int now_hour;//记录当前小时 
 	bool half_hour;//记录是否是半点，原游戏中时间步进位8:00,8：30,9:00 
+	int weather;//记录当前季节，0，1，2，3为春夏秋冬，为了便于计算，一年只有360天 
 	time_clock()
 	{
 		day=0;
@@ -62,6 +63,7 @@ void Time_system::update_clock()
 	{
 		now_clock.half_hour=true;
 	}
+	now_clock.weather=now_clock.day%90;//更新季节 
 }
 void Time_system::jump(int delta_hour)
 {
@@ -87,6 +89,9 @@ bool Time_system::jump_to_morning()
 	}
 	load_time.now_hour=6;
 	load_time.half_hour=false;
+	clock_time=load_time.day*720+load_time.now_hour*30+load_time.half_hour*15;
+	load_time.weather=load_time.day%90;//更新季节 
+	now_clock=load_time; 
 	return true; 
 }
 void Time_system::load(time_clock load_time)
