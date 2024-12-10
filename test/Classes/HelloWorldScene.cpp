@@ -95,7 +95,7 @@ bool HelloWorld::init()
     //    you may modify it.
 
     // add a "close" icon to exit the progress. it's an autorelease object
-    auto testMap = TMXTiledMap::create("Cave.tmx");
+    auto testMap = TMXTiledMap::create("Town.tmx");
     testMap->setPosition(Vec2(0, 0));
     if (!testMap) {
         CCLOG("Failed to load Town.tmx");
@@ -118,7 +118,8 @@ bool HelloWorld::init()
     
     farmer->add_part("/motion/walk_up/body/body_walk_up_0.png", "body");
     farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
-    farmer->add_tool("/motion/heavy_hit_right/axe/axe_heavy_hit_right_5.png", "axe");
+    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
+    farmer->add_weapon("/motion/light_hit_right/sickle/sickle_light_hit_right_5.png", "sickle");
 
     farmer->setLocalZOrder(0);
 
@@ -129,11 +130,14 @@ bool HelloWorld::init()
 
     auto farmer_parts = farmer->get_parts();
     auto farmer_tools = farmer->get_tools();
+    auto farmer_weapons = farmer->get_weapons();
 
     for (auto part : farmer_parts)
         this->addChild(part);
     for (auto tool : farmer_tools)
         this->addChild(tool);
+    for (auto weapon : farmer_weapons)
+        this->addChild(weapon);
 
     farmer->go(DOWN);
 
