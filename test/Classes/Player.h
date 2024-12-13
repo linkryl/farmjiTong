@@ -1,9 +1,12 @@
 ﻿#pragma once
+#ifndef PLAYER_H
+#define PLAYER_H
+#endif
+#include <map>
+#include <string>
 #include "cocos2d.h"
 #include "PlayerData.h"
 #include "Util.h"
-#include <map>
-#include <string>
 using namespace cocos2d;
 
 // 用于遍历Player的各个身体部分的宏
@@ -12,7 +15,6 @@ using namespace cocos2d;
 #define WEAPON_TRAVELSAL(weapon) for (const auto weapon : weapons)
 
 class Player;
-enum Part_catogory { HUMAN, TOOL, WEAPON, WEARING };
 
 class PlayerPart : public Sprite
 {
@@ -42,13 +44,14 @@ public:
         part_catogory = nameToCatogory[part_name];
     }
 
-    void go(const Direction direction, const Part_catogory catogory = HUMAN);
+    void go(const Direction direction, const int distance, const Part_catogory catogory = HUMAN);
     virtual void stand(const Direction direction);
     virtual void light_hit(const Direction direction);
     virtual void heavy_hit(const Direction direction);
 
     void setPlayer(Player* player);
     Player* getPlayer();
+    int getSpeed();
 
     static PlayerPart* create(const std::string& path, const std::string& part_name);
 };

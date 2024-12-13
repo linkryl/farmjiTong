@@ -1,7 +1,7 @@
 #include "Player.h"
 #include <functional>
 
-void PlayerPart::go(const Direction direction, const Part_catogory catogory)
+void PlayerPart::go(const Direction direction, const int distance, const Part_catogory catogory)
 {
     // 基准速度
     double base_speed = 60;
@@ -9,14 +9,7 @@ void PlayerPart::go(const Direction direction, const Part_catogory catogory)
     const int upper_limit = 6;
     // 每一帧动画的间隔
     const float frameGap = 0.2;
-    int originDistance = speed * base_speed, distance = originDistance;
-    for (int i = 1; i <= originDistance; ++i) {
-        Vec2 pos = modifyVec2(Vec2(getPosition()), direction, i);
-        if (!can_move(getPlayer()->getTiledMap(), pos, direction)) {
-            distance = i - 1;
-            break;
-        }
-    }
+    int originDistance = speed * base_speed;
     // 动作
     Vec2 moveVec2 = generateVec2(direction, distance);
     auto moveAction = MoveBy::create(upper_limit * frameGap * distance / originDistance, moveVec2);
@@ -212,6 +205,11 @@ Player* PlayerPart::getPlayer()
     return this->player;
 }
 
+int PlayerPart::getSpeed()
+{
+    return this->speed;
+}
+
 void Player::setTiledMap(TMXTiledMap* map)
 {
     tmxMap = map;
@@ -250,18 +248,31 @@ void Player::add_weapon(const std::string& path, const std::string& weapon_name)
 void Player::go(Direction direction)
 {
     faceTo = direction;
+    // 基准速度
+    double base_speed = 60;
+
+    int originDistance = get_parts().at(0)->getSpeed() * base_speed, distance = originDistance;
+    for (int i = 1; i <= originDistance; ++i) {
+        Vec2 pos = modifyVec2(Vec2(getPosition()), direction, i);
+        if (!can_move(getTiledMap(), pos, direction)) {
+            distance = i - 1;
+            break;
+        }
+    }
+    
     PLAYER_TRAVELSAL(part)
     {
-        part->go(direction);
+        part->go(direction, distance);
     }
     TOOL_TRAVELSAL(tool)
     {
-        tool->go(direction, TOOL);
+        tool->go(direction, distance, TOOL);
     }
     WEAPON_TRAVELSAL(weapon)
     {
-        weapon->go(direction, WEAPON);
+        weapon->go(direction, distance, WEAPON);
     }
+    //setPosition(modifyVec2(Vec2(getPosition()), direction, distance));
 }
 
 void Player::heavy_hit()
@@ -366,4 +377,4 @@ Player* Player::create()
     }
     CC_SAFE_DELETE(player);
     return nullptr;
-}
+}   
