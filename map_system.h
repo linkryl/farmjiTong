@@ -17,7 +17,6 @@ class Prop_system
 {
 	private:
 		map<int,Harvest> Harvest_map;
-		map<int,int> Seed_map;
 		map<int,base_plant> Plant_map;
 		map<int,base_animal> Animal_map;
 	public:
@@ -98,6 +97,31 @@ Prop_system::Prop_system()
 	Plant_map.insert(std::make_pair(1110,vegetable));
 	Plant_map.insert(std::make_pair(1111,corn));
 	Animal_map.insert(std::make_pair(2110,pig));
+	
+	
+	//以下为不可变部分的物品map
+	Harvest stone_harvest;
+	Harvest tree_harvest;
+	Harvest ironstone_harvest;
+	
+	//初始化收获数据
+	stone_harvest.harvest_type_a=3020;//碎石编号3020 
+	stone_harvest.max_harvest_num_a=2;//最大掉落2 
+	stone_harvest.harvest_type_b=0;//收获结构体的第二项为空 
+	stone_harvest.max_harvest_num_b=0;
+	tree_harvest.harvest_type_a=3021;//3021是木头 
+	tree_harvest.max_harvest_num_a=3;//最大掉落3 
+	tree_harvest.harvest_type_b=0;//收获结构体的第二项为空 
+	tree_harvest.max_harvest_num_b=0; 
+	ironstone_harvest.harvest_type_a=3022;//3022是铁锭 
+	ironstone_harvest.max_harvest_num_a=1;//最大掉落1 
+	ironstone_harvest.harvest_type_b=0;//收获结构体的第二项为空 
+	ironstone_harvest.max_harvest_num_b=0; 
+	
+	//将定义好的部分压入map
+	Harvest_map.insert(std::make_pair(3010,stone_harvest));//3010是石头
+	Harvest_map.insert(std::make_pair(3011,stone_harvest));//3011是树
+	Harvest_map.insert(std::make_pair(3012,stone_harvest));//3012是铁矿石 
 }
 Harvest Prop_system::get_harvset(int num)
 {
