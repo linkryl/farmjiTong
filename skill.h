@@ -14,12 +14,12 @@ class Skill{
 		int farm_level;//农场等级 
 		int collect_level;//采集等级 
 		int fishing_level;//钓鱼等级 
-		const double corral_lucky[6]={0,0.5,0.7,0.7,1.0,1.0};//养殖幸运值 
-		const double field_lucky[6]={0,0.5,0.5,0.8,0.8,1.5};//耕种幸运值 
+		const double corral_lucky[6]={0,1.0,1.4,1.4,2.0,2.0};//养殖幸运值 
+		const double field_lucky[6]={0,1,1,1.6,1.6,3.0};//耕种幸运值 
 		const double collect_speed[6]={0,1.0,1.5,1.5,2.0,2.0};//采集速度系数 
-		const double collect_lucky[6]={0,0.5,0.5,0.8,0.8,1.5};//采集幸运值 
+		const double collect_lucky[6]={0,1.0,1.0,1.6,1.6,3.0};//采集幸运值 
 		const double fishing_success_rate[6]={0,0.5,0.5,0.7,0.7,1.0};//钓鱼成功率 
-		const double fishing_lucky[6]={0,0.5,0.7,0.7,1.0,1.0};//钓鱼幸运值
+		const double fishing_lucky[6]={0,1.0,1.4,1.4,2.0,2.0};//钓鱼幸运值
 		const int level_exp[6]={-1,0,10,50,150,300};//经验表 
 	public:
 		Skill();//默认构造函数 
