@@ -64,6 +64,18 @@ class Skill{
 		{
 			return fishing_lucky[fishing_level];
 		}
+		int get_farm_level()//获取农场等级
+		{
+			return farm_level; 
+		} 
+		int get_collect_level()//获取采集等级
+		{
+			return collect_level; 
+		} 
+		int get_fishing_level()//获取钓鱼等级
+		{
+			return fishing_level; 
+		} 
 };
 Skill::Skill()//默认构造函数 
 {
