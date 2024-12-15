@@ -1,43 +1,47 @@
 #include"map_system.h" 
 
-class Corral//土地种植类 
+class Corral//畜栏类 
 {
 	private:
 		double water_condition;//水状态 
-		double food_condition;//肥料状态
-		bool planted_flag;//是否已经播种（养殖） 
-		double growth_time;//已养殖时间
+		double food_condition;//食物状态
+		bool planted_flag;//是否已经播种
+		double growth_time;//已生长时间
 		Prop_system prop_system;//物品映射表 
 		base_animal animal;//植物类，用于存放当前地块上种植的植物 
 	public:
 		Corral();
 		~Corral(){}
-		void update_conditon();//更新动物状态函数，在每天开始时执行 
-		bool plant_seed(int seed);//养植函数，返回true表示养殖成功，false为养殖失败 
+		void update_conditon();//更新作物状态函数，与季节无关 
+		bool plant_seed(int seed);//种植函数，返回true表示播种成功，false为播种失败 
 		Harvest get_harvest();//收获函数
-		bool add_food(double food_num);//添食函数，返回值是否能施肥 
-		bool add_water(double water_num);//加水函数，返回能否加水 
+		bool add_food(double food_num);//喂食函数，返回值是否能喂食 
+		bool add_water(double water_num);//浇水函数，返回能否浇水 
 		bool add_medicine();//治疗函数 
 		out_info get_info();//获取用于更新前端的信息 
 }; 
 Corral::Corral()//构造函数进行初始化 
 {
-	growth_time=false;
-	water_condition=0;//初始水为0 
+	growth_time=0;
+	water_condition=25;//初始水为25 
 	food_condition=0;//初始没有食物 
+	planted_flag=false; 
 }
 void Corral::update_conditon()//每日状态更新函数，需要在日期发生变更时执行 
 {
-	if(planted_flag!=false)//养殖后才有更新 
+	if(planted_flag!=false)//播种后才有更新 
 	{
-		if(animal.get_health()==0)//死了就不更新了 
+//		cout<<"update"<<endl;
+		if(animal.get_health()==0)//死了就不更新了
 		{
 			return;
 		} 
-		Consumption now_consumption=animal.get_consumption();//先获取养殖的动物的消耗量 
+		Consumption now_consumption=animal.get_consumption();//先获取种植的作物的消耗量 
+//		cout<<"fertilizer_condition: "<<fertilizer_condition<<endl;
 		if(water_condition>=now_consumption.water_consumption&&food_condition>=now_consumption.food_consumption&&animal.get_illness()==false)//如果满足消耗需求且不属于生病状态 
 		{
-			water_condition-=now_consumption.water_consumption;//消耗水和肥料 
+//			cout<<"health"<<endl;
+			water_condition-=now_consumption.water_consumption;//消耗水和食物 
 			food_condition-=now_consumption.food_consumption;
 			growth_time+=1;//更新生长状态
 			int rand_val=rand();
@@ -46,23 +50,27 @@ void Corral::update_conditon()//每日状态更新函数，需要在日期发生变更时执行
 			{
 				animal.set_illness(1);//正常情况有1/1111的几率生病 
 			}
+			return;
 		}
-		if(animal.get_illness()==true)//生病状态
+		if(animal.get_illness()==true)//生病状态仍在 
 		{
-			//病了也会消耗水和肥料 
+			//病了也会消耗水和食物 
 			if(water_condition>=now_consumption.water_consumption)//如果水还够 
 			{
 				water_condition-=now_consumption.water_consumption;//消耗水
 			} 
-			if(food_condition>=now_consumption.food_consumption)//如果肥料还够 
+			if(food_condition>=now_consumption.food_consumption)//如果食物还够 
 			{
-				food_condition-=now_consumption.food_consumption;//消耗肥料
+				food_condition-=now_consumption.food_consumption;//消耗食物
 			}
 			animal.set_health(-20);//每天健康-20 
+//			cout<<"health: "<<plant.get_health()<<endl;
+			return;
 		}
 		if(water_condition<now_consumption.water_consumption||food_condition<now_consumption.food_consumption)//如果不满足消耗需求
 		{
 			int rand_weight=2;
+//			cout<<water_condition<<" "<<fertilizer_condition<<endl;
 			if(water_condition>=now_consumption.water_consumption)//如果水还够 
 			{
 				water_condition-=now_consumption.water_consumption;//消耗水
@@ -79,6 +87,7 @@ void Corral::update_conditon()//每日状态更新函数，需要在日期发生变更时执行
 			{
 				animal.set_illness(1);//不正常情况有最高1/11的几率生病 
 			}
+//			plant.set_illness(1);
 		}
 	} 
 }
@@ -101,7 +110,7 @@ bool Corral::add_medicine()//治疗函数
 	}
 	return false;//没病你瞎治什么 
 } 
-bool Corral::add_food(double food_num)//施肥函数，返回施肥是否成功 
+bool Corral::add_food(double food_num)//喂食函数，返回喂食是否成功 
 {
 	if(food_condition>=100)//如果食物已满 
 	{
@@ -110,7 +119,7 @@ bool Corral::add_food(double food_num)//施肥函数，返回施肥是否成功
 	else
 	{
 		food_condition+=food_num;
-		if(food_condition>100)//防溢出 
+		if(food_condition>100)
 		{
 			food_condition=100.0;
 		}
@@ -126,7 +135,7 @@ bool Corral::add_water(double water_num)//浇水函数，返回浇水是否成功
 	else
 	{
 		water_condition+=water_num;
-		if(water_condition>100)//防溢出 
+		if(water_condition>100)
 		{
 			water_condition=100.0;
 		}
@@ -135,10 +144,25 @@ bool Corral::add_water(double water_num)//浇水函数，返回浇水是否成功
 }
 Harvest Corral::get_harvest()//收获函数 
 {
-	int growth_step=animal.get_growth_step(growth_time);
-	planted_flag=false;//畜栏还原为未养殖的状态 
+	Harvest empty_harvest=animal.get_harvest(false);
+	empty_harvest.harvest_type_a=-1;
+	empty_harvest.harvest_type_b=-1;
+	empty_harvest.max_harvest_num_a=0;
+	empty_harvest.max_harvest_num_b=0;
+//	cout<<endl<<planted_flag<<endl; /
+	if(planted_flag==false)//如果这块土地没有被播种过 
+	{
+		return empty_harvest;//返回空收获 
+	} 
+	planted_flag=false;//土地还原为未播种的状态 
+	if(animal.get_health()==0)//如果收获的是死的作物 
+	{
+		return empty_harvest;//返回一个空收获 
+	}
+	int growth_step=animal.get_growth_step(growth_time);//获取生长阶段 
 	if(growth_step<animal.get_max_step())//还没到收获季节 
 	{
+//		cout<<"ztz22"<<endl;
 		return animal.get_harvest(false);//返回中途收获的值 
 	}
 	return animal.get_harvest(true);//返回完整收获的值 
@@ -166,12 +190,13 @@ out_info Corral::get_info()//用于给前端提供更新用的信息
 	now_info.illness_flag=animal.get_illness();//修改病害标记
 	if(food_condition==0)//缺乏食物 
 	{
-		now_info.food_flag=true;//修改缺食物
+		now_info.food_flag=true;//修改缺食物标记 
 	} 
 	if(water_condition==0)
 	{
 		now_info.water_flag=true;//修改缺水标记 
 	}
+//	cout<<"growth_time: "<<growth_time<<endl;
 	now_info.step=animal.get_growth_step(growth_time);//修改生长阶段 
 	return now_info;//返回前端需求的值 
 } 
