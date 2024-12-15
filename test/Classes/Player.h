@@ -30,8 +30,6 @@ protected:
     Player* player;
     // 这部分的类别
     Part_catogory part_catogory;
-    // 这部分的名称
-    std::string part_name;
     // 名称映射到类别
     std::map<std::string, Part_catogory> nameToCatogory = { {"body", HUMAN}, {"arm", HUMAN}, {"axe", TOOL},
         {"pickaxe", TOOL}, {"hoe", TOOL}, { "sword", WEAPON }, {"sickle", WEAPON}, {"hat", WEARING} };
@@ -45,6 +43,8 @@ public:
         part_catogory = nameToCatogory[part_name];
     }
 
+    // 这部分的名称
+    std::string part_name;
     void go(const Direction direction, const Part_catogory catogory = HUMAN, const int id = 1);
     virtual void stand(const Direction direction, const Part_catogory catogory);
     virtual void light_hit(const Direction direction);
@@ -94,6 +94,7 @@ public:
     virtual void go(Direction direction);
     void heavy_hit();
     void light_hit();
+    void fishing();
     virtual void stand();
     void setPosition(const Vec2& vec);
     void setScale(const float scale);

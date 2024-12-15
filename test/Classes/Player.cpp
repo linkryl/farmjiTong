@@ -338,6 +338,21 @@ void Player::light_hit()
     }
 }
 
+void Player::fishing()
+{
+    std::map<int, std::string> numToString = { {UP,"up"}, {RIGHT, "right"}, {LEFT, "left"}, {DOWN, "down"} };
+    if (faceTo != UP)
+    {
+        PLAYER_TRAVELSAL(part)
+        {
+            if (part->part_name == "arm")
+            {
+                part->setTexture("motion/fishing_" + numToString[faceTo] + "/arm_fishing_" + numToString[faceTo] + ".png");
+            }
+        }
+    }
+}
+
 void Player::stand()
 {
     PLAYER_TRAVELSAL(part)
@@ -408,6 +423,7 @@ void Player::moveUpdate(MotionManager* information)
     auto light_hit = cocos2d::EventKeyboard::KeyCode::KEY_J;
     auto heavy_hit = cocos2d::EventKeyboard::KeyCode::KEY_K;
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
+    auto fishing = cocos2d::EventKeyboard::KeyCode::KEY_F;
 
     int offsetX = 0;
     Direction direction;
@@ -454,6 +470,9 @@ void Player::moveUpdate(MotionManager* information)
     {
         this->heavy_hit();
     }
+    // Еігу
+    else if (information->keyMap[fishing])
+        this->fishing();
     information->playerPosition = this->parts.at(0)->getPosition();
 }
 
