@@ -33,7 +33,7 @@ class Time_system
 		time_clock get_time();//获取时间
 		//更新时钟时间的函数，根据当前的clock_time重新计算clock 
 		void update_clock();//根据秒数重新计算时钟的函数 
-		
+		int get_clock_time();//返回以秒的方式存储的时钟时间
 		bool jump_to_morning();//跳跃到第二天早上的函数，false表示当前时间不能跳跃 
 		void load(time_clock load_time);//设定时间函数 
 };
@@ -90,4 +90,13 @@ void Time_system::load(time_clock load_time)
 	clock_time=load_time.day*720+load_time.now_hour*30+load_time.half_hour*15;
 	//以上表达式中所有的多余的秒均被舍弃 
 	now_clock=load_time; 
-} 
+}
+time_clock Time_system::get_time()//返回一个时钟结构体 
+{
+	update_time();//更新时间 
+	return now_clock;
+}
+int Time_system::get_clock_time()
+{
+	return clock_time;
+ } 
