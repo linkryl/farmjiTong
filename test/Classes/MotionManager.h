@@ -22,6 +22,8 @@ struct MotionManager
 	// 瓦片地图
 	TMXTiledMap* tmxMap;
 
+	// 好感度系统
+
 	// 对象群体
 	std::vector<Movable*> movableObjects;
 	// 更新函数

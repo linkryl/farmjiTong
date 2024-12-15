@@ -1,9 +1,11 @@
-#include "Player.h"
+ï»¿#include "Player.h"
 #include "Util.h"
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
 #include <iostream>
 #include <map>
+#include "DialogFrame.h"
+#include "MotionManager.h"
 
 USING_NS_CC;
 
@@ -19,61 +21,14 @@ static void problemLoading(const char* filename)
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
 }
 
-std::map<EventKeyboard::KeyCode, bool> keyMap;
-bool mouse_down = false;
-TMXTiledMap* tmxMap;
-
+// è¿åŠ¨ç®¡ç†å™¨
+MotionManager motionManager;
+enum Character { player, Abigail };
+// è§’è‰²å¯¹åº”çš„ID
+std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
 void HelloWorld::update(float delta)
 {
-    auto left = cocos2d::EventKeyboard::KeyCode::KEY_A;
-    auto right = cocos2d::EventKeyboard::KeyCode::KEY_D;
-    auto up = cocos2d::EventKeyboard::KeyCode::KEY_W;
-    auto down = cocos2d::EventKeyboard::KeyCode::KEY_S;
-    auto light_hit = cocos2d::EventKeyboard::KeyCode::KEY_J;
-    auto heavy_hit = cocos2d::EventKeyboard::KeyCode::KEY_K;
-
-    int offsetX = 0;
-    Direction direction;
-    if (keyMap[left])
-    {
-        offsetX = -4;
-        direction = LEFT;
-    }
-    else if (keyMap[right])
-    {
-        offsetX = 4;
-        direction = RIGHT;
-    }
-    else if (keyMap[down])
-    {
-        offsetX = 4;
-        direction = DOWN;
-    }
-    else if (keyMap[up])
-    {
-        offsetX = 4;
-        direction = UP;
-    }
-
-    Player* player = (Player*)this->getChildByTag(114514);
-    auto pos = player->get_parts().at(0)->getPosition();
-    if (player) {
-        CCLOG("Position %f %f", pos.x, pos.y);
-    }
-    if (offsetX != 0)
-    {
-        if (!can_move(player->getTiledMap(), pos, direction)) return;
-        player->go(direction);
-    }
-
-    if (keyMap[light_hit])
-    {
-        player->light_hit();
-    }
-    else if (keyMap[heavy_hit])
-    {
-        player->heavy_hit();
-    }
+    motionManager.update();
 }
 
 // on "init" you need to initialize your instance
@@ -95,33 +50,59 @@ bool HelloWorld::init()
     //    you may modify it.
 
     // add a "close" icon to exit the progress. it's an autorelease object
-    auto testMap = TMXTiledMap::create("Town.tmx");
+    auto testMap = TMXTiledMap::create("Farm.tmx");
     testMap->setPosition(Vec2(0, 0));
     if (!testMap) {
         CCLOG("Failed to load Town.tmx");
         return false;
     }
-    tmxMap = testMap;
+    motionManager.tmxMap = testMap;
     addChild(testMap, -8);
     auto testLayer = testMap->getLayer("Front");
-    //testLayer->setLocalZOrder(11);
+    testLayer->setLocalZOrder(5);
 
     /////////////////////////////
     // 3. add your codes below...
     // add a label shows "Hello World"
     // create and initialize a label
-    // Ìí¼ÓËÑË÷Â·¾¶
+    // æ·»åŠ æœç´¢è·¯å¾„
     FileUtils::getInstance()->addSearchPath("E:\\cocos2d-x-3.17.2\\cocos2d-x-3.17.2\\testCpp2\\proj.win32\\Debug.win32\\content");
 
+    // NPCéƒ¨åˆ†
+    auto abigail = new NPC();
+    motionManager.add_movableObject(abigail);
+    abigail->add_part("chracters/model/Abigail/walk_down/00.png", "body");
+    abigail->setTiledMap(testMap);
+    std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."}};
+    abigail->add_dialogs(dialogList);
+
+    abigail->setLocalZOrder(1);
+
+    abigail->setScale(1.5);
+    //farmer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - farmer->getContentSize().height));
+
+    abigail->setPosition(Vec2(615, 835));
+
+    auto Abigail_parts = abigail->get_parts();
+    for (auto part : Abigail_parts)
+        this->addChild(part);
+
+
+    this->addChild(abigail, 1, characterID[Abigail]);
+
+    // äººç‰©éƒ¨åˆ†
     auto farmer = Player::create();
+    motionManager.add_movableObject(farmer);
     farmer->setTiledMap(testMap);
     
-    farmer->add_part("/motion/walk_up/body/body_walk_up_0.png", "body");
-    farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
+    farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
+    farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
     farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
     farmer->add_weapon("/motion/light_hit_right/sickle/sickle_light_hit_right_5.png", "sickle");
+    farmer->add_wearing("/wearing/hat", "hat", 3);
+    farmer->add_wearing("/wearing/shirt", "shirt", 2);
 
-    farmer->setLocalZOrder(0);
+    farmer->setLocalZOrder(2);
 
     farmer->setScale(1.5);
     //farmer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - farmer->getContentSize().height));
@@ -131,27 +112,31 @@ bool HelloWorld::init()
     auto farmer_parts = farmer->get_parts();
     auto farmer_tools = farmer->get_tools();
     auto farmer_weapons = farmer->get_weapons();
-
+    auto farmer_wearings = farmer->get_wearings();
+    for (auto wearing : farmer_wearings)
+        this->addChild(wearing, 5);
     for (auto part : farmer_parts)
         this->addChild(part);
     for (auto tool : farmer_tools)
-        this->addChild(tool);
+        this->addChild(tool, 6);
     for (auto weapon : farmer_weapons)
-        this->addChild(weapon);
+        this->addChild(weapon, 7);
 
-    farmer->go(DOWN);
+    //farmer->go(DOWN);
 
-    this->addChild(farmer, 2, 114514);
+    this->addChild(farmer, 2, characterID[player]);
 
-    //¼üÅÌÊÂ¼ş¼àÌıÆ÷
+
+
+    //é”®ç›˜äº‹ä»¶ç›‘å¬å™¨
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         log("press");
-        keyMap[keyCode] = true;
+        motionManager.keyMap[keyCode] = true;
         };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         log("release");
-        keyMap[keyCode] = false;
+        motionManager.keyMap[keyCode] = false;
         std::cout << "release" << std::endl;
         if (keyCode == EventKeyboard::KeyCode::KEY_W ||
             keyCode == EventKeyboard::KeyCode::KEY_A ||
