@@ -1,8 +1,8 @@
 #include "WoodsScene.h"
-#include "Util.h"
+#include "Utils/MapUtil.h"
 #include "Player.h"
 #include "SimpleAudioEngine.h"
-#include "SceneUtil.h"
+#include "Utils/SceneUtil.h"
 #include <iostream>
 #include <map>
 
@@ -85,7 +85,7 @@ void WoodsScene::update(float delta)
     }
     auto layer = player->getTiledMap()->getLayer("Front");
     //layer->setTileGID(82, convertToTileCoord(player->getTiledMap(), player->getPosition()));
-    test();
+    //test();
     //CCLOG("%f %f : %d", player->getPosition().x, player->getPosition().y, layer->getTileGIDAt(convertToTileCoord(player->getTiledMap(), player->getPosition())));
 
 }

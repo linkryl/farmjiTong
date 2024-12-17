@@ -1,8 +1,8 @@
 #include "MountainScene.h"
-#include "Util.h"
+#include "Utils/MapUtil.h"
 #include "Player.h"
 #include "SimpleAudioEngine.h"
-#include "SceneUtil.h"
+#include "Utils/SceneUtil.h"
 #include <iostream>
 #include <map>
 

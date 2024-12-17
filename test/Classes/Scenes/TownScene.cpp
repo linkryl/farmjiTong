@@ -1,8 +1,9 @@
 #include "TownScene.h"
-#include "Util.h"
+#include "FarmScene.h"
+#include "Utils/MapUtil.h"
 #include "Player.h"
 #include "SimpleAudioEngine.h"
-#include "SceneUtil.h"
+#include "Utils/SceneUtil.h"
 #include <iostream>
 #include <map>
 
@@ -29,7 +30,7 @@ void TownScene::test() {
     //layer->setTileGID(82, convertToTileCoord(tmxMap, position));
     //CCLOG("%f %f : %d", tileCoord.x, tileCoord.y, layer->getTileGIDAt(tileCoord));
     //CCLOG("%d", all_var);
-    all_var++;
+    
 }
 
 void TownScene::update(float delta)
