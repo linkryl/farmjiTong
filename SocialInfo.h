@@ -13,19 +13,20 @@ struct Entrust
 	// 请求者
 	std::string master;
 	// 请求的文本
-	std::string requirement;
+	std::string requirement;//不应长于20
 	// 请求的物品
 	std::string item;
 	Entrust() { id = num++; }
-	Entrust(std::string master, std::string requirement, std::string item) : master(master), requirement(requirement), item(item) { id = id++; }
+	Entrust(const std::string& master, const  std::string& requirement, const  std::string& item) : master(master), requirement(requirement), item(item) { id = id++; }
 };
 class SocialInfo
 {
 public:
 	// 好感度提升和下降的档次对应的数字
-	std::map<int, int> delta_favorability = { {1, 100}, {2, 200}, {3, 500} };
+	std::map<int, int> delta_favorability = { {1, 100}, {2, 200}, {3, 500} };//已弃用
 	// 和各个NPC的好感度
 	std::map<std::string, int> favorabilities;//int值不应大于10
+
 	// 各个NPC提出的委托
   std::vector<Entrust> entrusts;
 	// NPC的名字
