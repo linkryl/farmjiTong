@@ -2,17 +2,17 @@
 #include <cocos2d.h>
 #include <map>
 #include <vector>
+//#include "Player.h"
 using namespace cocos2d;
-
 class Movable;
 struct MotionManager
 {
 	// 环境参量
-
-
 	enum Character { player, Abigail };
 	// 角色对应的ID
 	std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
+	// 玩家指针
+    // Player* playerPtr;
 	// 玩家位置
 	Vec2 playerPosition;
 	// 按键信息
@@ -30,6 +30,7 @@ struct MotionManager
 	void update();
 	// 添加对象的函数
 	void add_movableObject(Movable* newObject);
+	void del_object(Movable* objPtr);
 };
 
 class Movable

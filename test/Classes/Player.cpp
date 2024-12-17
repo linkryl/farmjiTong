@@ -5,7 +5,7 @@
 void PlayerPart::go(const Direction direction, const Part_catogory catogory, const int id)
 {
     // 基准速度
-    double base_speed = 60;
+    double base_speed = 80;
     // 一共6帧
     const int upper_limit = 6;
     // 每一帧动画的间隔
@@ -264,7 +264,7 @@ void Player::add_tool(const std::string& path, const std::string& tool_name)
     auto part = PlayerPart::create(path, tool_name);
     part->setPlayer(this);
     part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
-    tools.pushBack(part);
+    tool = part;
     //tools.pushBack(PlayerPart::create(path, tool_name));
 }
 
@@ -273,7 +273,7 @@ void Player::add_weapon(const std::string& path, const std::string& weapon_name)
     auto part = PlayerPart::create(path, weapon_name);
     part->setPlayer(this);
     part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
-    weapons.pushBack(part);
+    weapon = part;
 }
 
 void Player::add_wearing(const std::string& path, const std::string& wearing_name, const int id)
@@ -296,14 +296,8 @@ void Player::go(Direction direction)
     {
         part->go(direction);
     }
-    TOOL_TRAVELSAL(tool)
-    {
-        tool->go(direction, TOOL);
-    }
-    WEAPON_TRAVELSAL(weapon)
-    {
-        weapon->go(direction, WEAPON);
-    }
+    tool->go(direction, TOOL);
+    weapon->go(direction, WEAPON);
     WEARING_TRAVELSAL(wearing)
     {
         wearing->go(direction, WEARING, wearingId[wearing->part_name]);
@@ -316,12 +310,9 @@ void Player::heavy_hit()
     {
         part->heavy_hit(faceTo);
     }
-    TOOL_TRAVELSAL(tool)
-    {
-        // 工具向上砍不好做，干脆不要了
-        if (faceTo != UP)
-            tool->heavy_hit(faceTo);
-    }
+    // 工具向上砍不好做，干脆不要了
+    if (faceTo != UP)
+       tool->heavy_hit(faceTo);
 }
 
 void Player::light_hit()
@@ -330,12 +321,9 @@ void Player::light_hit()
     {
         part->light_hit(faceTo);
     }
-    WEAPON_TRAVELSAL(weapon)
-    {
-        // 还是一样的，向上砍的动作不好做
-        if (faceTo != UP)
-            weapon->light_hit(faceTo);
-    }
+    // 还是一样的，向上砍的动作不好做
+    if (faceTo != UP)
+        weapon->light_hit(faceTo);
 }
 
 void Player::fishing()
@@ -359,14 +347,10 @@ void Player::stand()
     {
         part->stand(faceTo, HUMAN);
     }
-    TOOL_TRAVELSAL(tool)
-    {
+    if (tool != nullptr)
         tool->stand(faceTo, TOOL);
-    }
-    WEAPON_TRAVELSAL(weapon)
-    {
+    if (weapon != nullptr)
         weapon->stand(faceTo, WEAPON);
-    }
     WEARING_TRAVELSAL(wearing)
     {
         wearing->stand(faceTo, WEARING);
@@ -380,14 +364,10 @@ void Player::setPosition(const Vec2& vec)
     {
         part->setPosition(vec);
     }
-    TOOL_TRAVELSAL(tool)
-    {
+    if (tool != nullptr)
         tool->setPosition(vec);
-    }
-    WEAPON_TRAVELSAL(weapon)
-    {
+    if (weapon != nullptr)
         weapon->setPosition(vec);
-    }
     WEARING_TRAVELSAL(wearing)
     {
         wearing->setPosition(vec);
@@ -400,14 +380,10 @@ void Player::setScale(const float scale)
     {
         part->setScale(scale);
     }
-    TOOL_TRAVELSAL(tool)
-    {
+    if (tool != nullptr)
         tool->setScale(scale);
-    }
-    WEAPON_TRAVELSAL(weapon)
-    {
+    if (tool != nullptr)
         weapon->setScale(scale);
-    }
     WEARING_TRAVELSAL(wearing)
     {
         wearing->setScale(scale);
@@ -425,55 +401,55 @@ void Player::moveUpdate(MotionManager* information)
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
     auto fishing = cocos2d::EventKeyboard::KeyCode::KEY_F;
 
-    int offsetX = 0;
+    bool move = false;
     Direction direction;
     if (information->keyMap[left])
     {
-        offsetX = -4;
+        move = true;
         direction = LEFT;
     }
     else if (information->keyMap[right])
     {
-        offsetX = 4;
+        move = true;
         direction = RIGHT;
     }
     else if (information->keyMap[down])
     {
-        offsetX = 4;
+        move = true;
         direction = DOWN;
     }
     else if (information->keyMap[up])
     {
-        offsetX = 4;
+        move = true;
         direction = UP;
     }
-
-    // 获取对象
-    // Player* farmer = (Player*)this->getChildByTag(characterID[player]);
-    // Player* abigail = (Player*)this->getChildByTag(characterID[Abigail]);
     auto pos = this->get_parts().at(0)->getPosition();
     if (this) {
         CCLOG("Position %f %f", pos.x, pos.y);
     }
-    if (offsetX != 0)
+    if (move)
     {
         if (!can_move(this->getTiledMap(), pos, direction)) return;
         this->go(direction);
     }
 
     // 轻重击 
-    if (information->keyMap[light_hit])
+    if (information->keyMap[light_hit] && !move)
     {
         this->light_hit();
     }
-    else if (information->keyMap[heavy_hit])
+    else if (information->keyMap[heavy_hit] && !move)
     {
         this->heavy_hit();
     }
     // 钓鱼
-    else if (information->keyMap[fishing])
+    else if (information->keyMap[fishing] && !move)
         this->fishing();
-    information->playerPosition = this->parts.at(0)->getPosition();
+    auto currentPosition = this->parts.at(0)->getPosition();
+    currentPosition.x += this->getScaleX() / 2;
+    currentPosition.y += this->getScaleY() / 2;
+
+    information->playerPosition = currentPosition;
 }
 
 Vector<PlayerPart*> Player::get_parts()
@@ -481,14 +457,14 @@ Vector<PlayerPart*> Player::get_parts()
     return parts;
 }
 
-Vector<PlayerPart*> Player::get_tools()
+PlayerPart* Player::get_tools()
 {
-    return tools;
+    return tool;
 }
 
-Vector<PlayerPart*> Player::get_weapons()
+PlayerPart* Player::get_weapons()
 {
-    return weapons;
+    return weapon;
 }
 Vector<PlayerPart*> Player::get_wearings()
 {
@@ -514,14 +490,17 @@ void NPC::add_dialogs(const std::vector<std::string>& dialogs_)
 
 void NPC::communicate()
 {
+    if (communicating) return;
+    communicating = true;
     // 对话框部分
     auto dialogFrame = DialogFrame::create(dialogs.at(0));
     dialogFrame->setPosition(Vec2(-625, -800));
     this->addChild(dialogFrame);
 
     // 设置关闭按钮的回调函数
-    dialogFrame->setCloseCallback([]() {
+    dialogFrame->setCloseCallback([&]() {
         CCLOG("Dialog closed!");
+        communicating = false;
         });
     // 设置对话框头像
     dialogFrame->setAvatar("chracters/portraits/Abigail/Abigail_common.png");
@@ -531,13 +510,16 @@ void NPC::communicate()
 
 void NPC::communicate(const std::string& text, const std::string& emotion)
 {
+    if (communicating) return;
+    communicating = true;
     auto dialogFrame = DialogFrame::create(text);
     dialogFrame->setPosition(Vec2(-625, -800));
     this->addChild(dialogFrame);
 
     // 设置关闭按钮的回调函数
-    dialogFrame->setCloseCallback([]() {
+    dialogFrame->setCloseCallback([&]() {
         CCLOG("Dialog closed!");
+        communicating = false;
         });
     // 设置对话框头像
     dialogFrame->setAvatar("chracters/portraits/Abigail/Abigail_"+ emotion +".png");
@@ -545,12 +527,6 @@ void NPC::communicate(const std::string& text, const std::string& emotion)
 
 void NPC::moveUpdate(MotionManager * information)
 {
-    auto left = cocos2d::EventKeyboard::KeyCode::KEY_A;
-    auto right = cocos2d::EventKeyboard::KeyCode::KEY_D;
-    auto up = cocos2d::EventKeyboard::KeyCode::KEY_W;
-    auto down = cocos2d::EventKeyboard::KeyCode::KEY_S;
-    auto light_hit = cocos2d::EventKeyboard::KeyCode::KEY_J;
-    auto heavy_hit = cocos2d::EventKeyboard::KeyCode::KEY_K;
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
     auto gift = cocos2d::EventKeyboard::KeyCode::KEY_G;
     if (information->keyMap[communicate])

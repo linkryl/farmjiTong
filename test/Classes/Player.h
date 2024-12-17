@@ -2,9 +2,9 @@
 #include "cocos2d.h"
 #include "PlayerData.h"
 #include "Util.h"
+#include "MotionManager.h"  // 包含 MotionManager.h
 #include <map>
 #include <string>
-#include "MotionManager.h"
 using namespace cocos2d;
 
 // 用于遍历Player的各个身体部分的宏
@@ -35,7 +35,7 @@ protected:
         {"pickaxe", TOOL}, {"hoe", TOOL}, { "sword", WEAPON }, {"sickle", WEAPON}, {"hat", WEARING} };
     std::map<Motion, int> hashValue = { {GO, 147}, {LIGHT_HIT, 458}, {HEAVY_HIT, 749}, {STAND, 8674} };
     std::map<std::string, int> partNameHash = { {"body", 4556498}, {"arm", 843458}, {"axe", 43545364},
-        {"pickaxe", 56431512}, {"hoe", 54444545}, {"sword", 9522665}, {"sickle", 984213056}, {"hat", 896185}, {"hairstyle", 943690}, {"shirt", 438135}, {"pants", 940650}};
+        {"pickaxe", 56431512}, {"hoe", 54444545}, {"sword", 9522665}, {"sickle", 984213056}, {"hat", 896185}, {"hairstyle", 943690}, {"shirt", 438135}, {"pants", 940650} };
 public:
     PlayerPart() : luck(0.0f), speed(1) {}
     PlayerPart(const std::string& part_name, const int width_ = 16, const int height_ = 32) : luck(0.0f), speed(1), part_name(part_name), width(width_), height(height_)
@@ -63,21 +63,28 @@ protected:
     // 角色的身体各个部分
     Vector<PlayerPart*> parts;
     // 角色手持的工具（重击动作）
-    Vector<PlayerPart*> tools;
+    PlayerPart* tool;
     // 角色手持的武器（轻击动作）
-    Vector<PlayerPart*> weapons;
+    PlayerPart* weapon;
     // 角色的衣着
     Vector<PlayerPart*> wearings;
 
-    // 幸运值
-    float luck;
-    // 速度
-    int speed;
     // 朝向方向
     Direction faceTo;
     // 所在地图
     TMXTiledMap* tmxMap;
 public:
+    // 血量
+    int health;
+    // 体力值
+    int physical;
+    // 幸运值
+    float luck;
+    // 速度
+    int speed;
+    // 攻击力
+    int attack = 10;
+
     // 玩家的帽子，衣服，裤子的id
     std::map<std::string, int> wearingId;
     Player(TMXTiledMap* map = nullptr) : luck(0), speed(1), faceTo(DOWN) {
@@ -99,8 +106,8 @@ public:
     void setPosition(const Vec2& vec);
     void setScale(const float scale);
     Vector<PlayerPart*> get_parts();
-    Vector<PlayerPart*> get_tools();
-    Vector<PlayerPart*> get_weapons();
+    PlayerPart* get_tools();
+    PlayerPart* get_weapons();
     Vector<PlayerPart*> get_wearings();
 
     static Player* create();
@@ -111,6 +118,8 @@ class NPC : public Player
 private:
     // 对话的内容
     std::vector<std::string> dialogs;
+    // 正在对话
+    bool communicating;
 public:
     //virtual void go(Direction direction);
     //virtual void stand();
