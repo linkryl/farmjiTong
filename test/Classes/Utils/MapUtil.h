@@ -29,13 +29,15 @@ std::pair<int, int> convertToTileCoord(const int x, const int y, const int xSize
 // @ tmxMap    瓦片地图对象
 // @ position  需要转换的像素坐标
 // @ direction 移动方向
-bool can_move(TMXTiledMap* tmxMap, const Vec2 position, Direction direction);
+// @ isScene   函数是否为MovableScene对象调用
+bool canMove(TMXTiledMap* tmxMap, const Vec2 position, Direction direction, bool isScene = false, int moveDistance = 1);
+
 
 // 通过方向和距离生成Vec2向量
 // 
 // @ direction 移动方向
 // @ distance  距离
-Vec2 generateVec2(Direction direction, int distance);
+Vec2 generateVec2(Direction direction, double distance);
 
 // Vec2向量相加，返回新向量
 // 
@@ -48,5 +50,5 @@ Vec2 addVec2(Vec2 vec1, Vec2 vec2);
 // @ vec       需要修改的向量
 // @ direction 移动方向
 // @ distance  距离
-Vec2 modifyVec2(Vec2 vec, Direction direction, int distance);
+Vec2 modifyVec2(Vec2 vec, Direction direction, double distance);
 
