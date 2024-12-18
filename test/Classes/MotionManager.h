@@ -2,8 +2,8 @@
 #include <cocos2d.h>
 #include <map>
 #include <vector>
-//#include "Player.h"
 using namespace cocos2d;
+
 class Movable;
 struct MotionManager
 {
@@ -11,8 +11,6 @@ struct MotionManager
 	enum Character { player, Abigail };
 	// 角色对应的ID
 	std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
-	// 玩家指针
-    // Player* playerPtr;
 	// 玩家位置
 	Vec2 playerPosition;
 	// 按键信息

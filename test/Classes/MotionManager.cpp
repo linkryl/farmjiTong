@@ -26,5 +26,5 @@ void MotionManager::add_movableObject(Movable* newObject)
 }
 void MotionManager::del_object(Movable* objPtr)
 {
-	std::erase(movableObjects, objPtr);
+	//std::erase(movableObjects, objPtr);
 }

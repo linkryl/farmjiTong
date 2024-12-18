@@ -1,23 +1,25 @@
 #include "Player.h"
 #include "DialogFrame.h"
+#include "Constant.h"
 #include <functional>
 
 void PlayerPart::go(const Direction direction, const Part_catogory catogory, const int id)
 {
-    // 基准速度
-    double base_speed = 80;
     // 一共6帧
     const int upper_limit = 6;
     // 每一帧动画的间隔
     const float frameGap = 0.2;
-    int originDistance = speed * base_speed, distance = originDistance;
+    int originDistance = speed * BASE_MOVE_DISTANCE, distance = originDistance;
+
     for (int i = 1; i <= originDistance; ++i) {
+
         Vec2 pos = modifyVec2(Vec2(getPosition()), direction, i);
-        if (!can_move(getPlayer()->getTiledMap(), pos, direction)) {
+        if (!canMove(getPlayer()->getTiledMap(), pos, direction)) {
             distance = i - 1;
             break;
         }
     }
+
     // 动作
     Vec2 moveVec2 = generateVec2(direction, distance);
     auto moveAction = MoveBy::create(upper_limit * frameGap * distance / originDistance, moveVec2);
@@ -240,6 +242,17 @@ Player* PlayerPart::getPlayer()
 {
     return this->player;
 }
+
+void Player::setTiledMap(TMXTiledMap* map)
+{
+    tmxMap = map;
+}
+
+TMXTiledMap* Player::getTiledMap()
+{
+    return this->tmxMap;
+}
+
 void Player::regist(MotionManager* motionManager, Node* father)
 {
     motionManager->add_movableObject(this);
@@ -248,7 +261,7 @@ void Player::regist(MotionManager* motionManager, Node* father)
     auto farmer_tools = this->get_tools();
     auto farmer_weapons = this->get_weapons();
     auto farmer_wearings = this->get_wearings();
-    auto farmer_shadow = this->get_shadow();
+    //auto farmer_shadow = this->get_shadow();
     for (auto wearing : farmer_wearings)
         father->addChild(wearing);
     for (auto part : farmer_parts)
@@ -269,7 +282,7 @@ void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
     auto farmer_tools = this->get_tools();
     auto farmer_weapons = this->get_weapons();
     auto farmer_wearings = this->get_wearings();
-    auto farmer_shadow = this->get_shadow();
+    //auto farmer_shadow = this->get_shadow();
     for (auto wearing : farmer_wearings)
         father->addChild(wearing, Zorder + 1);
     for (auto part : farmer_parts)
@@ -281,18 +294,8 @@ void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
         father->addChild(farmer_tools, Zorder + 3);
     if (farmer_weapons)
         father->addChild(farmer_weapons, Zorder + 4);
-    if (farmer_shadow)
-        father->addChild(farmer_shadow, Zorder - 6);
-}
-
-void Player::setTiledMap(TMXTiledMap* map)
-{
-    tmxMap = map;
-}
-
-TMXTiledMap* Player::getTiledMap()
-{
-    return this->tmxMap;
+    //if (farmer_shadow)
+    //    father->addChild(farmer_shadow, Zorder - 6);
 }
 
 void Player::add_part(const std::string& path, const std::string& part_name)
@@ -331,6 +334,7 @@ void Player::add_wearing(const std::string& path, const std::string& wearing_nam
     part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
     wearings.pushBack(part);
 }
+
 void Player::add_shadow(const std::string& path)
 {
     auto part = PlayerPart::create(path, "shadow");
@@ -364,7 +368,7 @@ void Player::heavy_hit()
     }
     // 工具向上砍不好做，干脆不要了
     if (faceTo != UP)
-       tool->heavy_hit(faceTo);
+        tool->heavy_hit(faceTo);
 }
 
 void Player::light_hit()
@@ -497,13 +501,14 @@ void Player::moveUpdate(MotionManager* information)
         move = true;
         direction = UP;
     }
+
     auto pos = this->get_parts().at(0)->getPosition();
     if (this) {
-        CCLOG("Position %f %f", pos.x, pos.y);
+        //CCLOG("Position %f %f", pos.x, pos.y);
     }
     if (move)
     {
-        if (!can_move(this->getTiledMap(), pos, direction)) return;
+        if (!canMove(this->getTiledMap(), pos, direction)) return;
         this->go(direction);
     }
 
@@ -529,7 +534,7 @@ void Player::moveUpdate(MotionManager* information)
     // 更新位置
     information->playerPosition = currentPosition;
     // 更新血量
-    health += information->deltaPlayerHealth;
+    //health += information->deltaPlayerHealth;
 }
 
 Vector<PlayerPart*> Player::get_parts()
@@ -606,10 +611,10 @@ void NPC::communicate(const std::string& text, const std::string& emotion)
         communicating = false;
         });
     // 设置对话框头像
-    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_"+ emotion +".png");
+    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_" + emotion + ".png");
 }
 
-void NPC::moveUpdate(MotionManager * information)
+void NPC::moveUpdate(MotionManager* information)
 {
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
     auto gift = cocos2d::EventKeyboard::KeyCode::KEY_G;
