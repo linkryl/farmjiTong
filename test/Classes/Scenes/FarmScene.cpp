@@ -15,6 +15,10 @@
 #include "MotionManager.h"
 #include "Constant.h"
 
+USING_NS_CC;
+
+enum Character { player, Abigail };
+
 // 物品映射遵照如下编码： 
 // 
 // 1110为蔬菜作物，1100为蔬菜种子，1120为收获的蔬菜 
@@ -28,18 +32,16 @@ extern std::map<int, std::string> crop_names;
 extern std::map<int, int> crop_image_number;
 extern PlayerInfo playerInfo;
 
-USING_NS_CC;
+// 运动管理器
+static MotionManager motionManager;
+// 角色对应的ID
+static std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
 
 Scene* FarmScene::createScene()
 {
     return FarmScene::create();
 }
 
-// 运动管理器
-static MotionManager motionManager;
-enum Character { player, Abigail };
-// 角色对应的ID
-static std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
 void FarmScene::update(float delta)
 {
     motionManager.update();
@@ -138,7 +140,7 @@ bool FarmScene::init()
 
     // 初始化人物
     auto farmer = Player::create();
-    motionManager.add_movableObject(farmer);
+    //motionManager.add_movableObject(farmer);
     
     farmer->setTiledMap(map);
     farmer->setAnchorPoint(Vec2(0, 0));
@@ -146,22 +148,24 @@ bool FarmScene::init()
     farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
 
     farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
-
+    /*
     for (auto part : farmer->get_parts()) {
         this->addChild(part, 20);
     }
 
     this->addChild(farmer, 20, characterID[Character::player]);
     this->setPlayer(farmer);
+    */
+    farmer->regist(&motionManager, this, 2);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
 
-    motionManager.add_movableObject(this);
-    this->go(static_cast<Direction>((playerInfo.faceTo + 2) % 4));
+    //motionManager.add_movableObject(this);
+    this->go(opposite(playerInfo.faceTo));
 
 
-    //键盘事件监听器
+    // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         motionManager.keyMap[keyCode] = true;
@@ -173,7 +177,7 @@ bool FarmScene::init()
             keyCode == EventKeyboard::KeyCode::KEY_S ||
             keyCode == EventKeyboard::KeyCode::KEY_D)
         {
-            Player* player = (Player*)this->getChildByTag(characterID[Character::player]);
+            Player* player = farmer;
             player->stand();
             this->stopAllActions();
         }
