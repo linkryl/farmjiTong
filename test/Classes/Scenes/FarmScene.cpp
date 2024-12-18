@@ -3,6 +3,9 @@
 #include "SimpleAudioEngine.h"
 #include "FarmScene.h"
 #include "TownScene.h"
+#include "WoodsScene.h"
+#include "CaveScene.h"
+#include "MountainScene.h"
 #include "Player.h"
 #include "../Utils/MapUtil.h"
 #include "../Utils/SceneUtil.h"
@@ -18,13 +21,12 @@
 // 1111为谷物作物，1101为谷物种子，1121为收获的谷物 
 // 2110为猪，2100为猪仔，2120为猪肉 
 
-extern int all_var;
 extern Farm_system farm_system;
 extern Liverstock_farm_system live_farm_system;
 extern Time_system time_system;
 extern std::map<int, std::string> crop_names;
 extern std::map<int, int> crop_image_number;
-
+extern PlayerInfo playerInfo;
 
 USING_NS_CC;
 
@@ -34,10 +36,10 @@ Scene* FarmScene::createScene()
 }
 
 // 运动管理器
-MotionManager motionManager;
+static MotionManager motionManager;
 enum Character { player, Abigail };
 // 角色对应的ID
-std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
+static std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
 void FarmScene::update(float delta)
 {
     motionManager.update();
@@ -61,9 +63,18 @@ bool FarmScene::init()
     // 设置地图的位置
     map->setPosition(Vec2(0, 0));
     map_front->setPosition(Vec2(0, 0));
+    map->setAnchorPoint(Vec2(0, 0));
+    map_front->setAnchorPoint(Vec2(0, 0));
     // 将地图添加到场景中
     this->addChild(map);
     this->addChild(map_front, 80);
+    // 场景中绑定地图
+    this->setTiledMap(map);
+
+    this->setAnchorPoint(Vec2(0, 0));
+    //this->setPosition(Vec2(-GAME_SCALE * (playerInfo.tileX * 8 + 8), -GAME_SCALE * (playerInfo.tileY * 8 + 8)));
+    this->setPosition(getMiddlePosition(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
+    this->setScale(GAME_SCALE);
 
     // 初始化农田
     for (int i = 0; i < 5; ++i) {
@@ -78,55 +89,85 @@ bool FarmScene::init()
             auto crop = Sprite::create("/Crops/" + crop_names[1110 + rand() % 2] + "_" + std::to_string(rand() % 6 + 1) + ".png");
             crop->setPosition(16 * (FARM_OFFSET_X + i), 16 * (FARM_OFFSET_Y + j));
             crop->setAnchorPoint(Vec2(0, 0));
+            //crop->setScale(GAME_SCALE);
             addChild(crop);
         }
     }
 
     // 初始化畜栏
-    for (int i = 0; i < 5; ++i) {
-        auto info = live_farm_system.get_info(16 * (LIVE_FARM_OFFSET_X + i), 16 * LIVE_FARM_OFFSET_Y);
-        if (info.type == 0) {
-            //continue;
-        }
-        // 编号应该按照作物生长状态动态调取，先演示
-        //auto crop = Sprite::create("/crops/" + crop_names[info.type] + "_6");
+    if (0) {
+        for (int i = 0; i < 5; ++i) {
+            auto info = live_farm_system.get_info(16 * (LIVE_FARM_OFFSET_X + i), 16 * LIVE_FARM_OFFSET_Y);
+            if (info.type == 0) {
+                //continue;
+            }
+            // 编号应该按照作物生长状态动态调取，先演示
+            //auto crop = Sprite::create("/crops/" + crop_names[info.type] + "_6");
 
-        auto crop = Sprite::create("/Animals/" + crop_names[2110] + "_1.png");
-        crop->setPosition(16 * (LIVE_FARM_OFFSET_X + i * 3) - 8, 16 * LIVE_FARM_OFFSET_Y + 8);
-        crop->setAnchorPoint(Vec2(0, 0));
-        addChild(crop);
+            auto crop = Sprite::create("/Animals/" + crop_names[2110] + "_1.png");
+            crop->setPosition(GAME_SCALE * (16 * (LIVE_FARM_OFFSET_X + i * 3) - 8), GAME_SCALE * (16 * LIVE_FARM_OFFSET_Y + 8));
+            crop->setAnchorPoint(Vec2(0, 0));
+            //crop->setScale(GAME_SCALE);
+            addChild(crop);
+        }
     }
 
+    // 测试点
+    Size mapSize = map->getMapSize();
+    Size tileSize = map->getTileSize();
+    double sceneFixedWidth = visibleSize.width / 2.0 / GAME_SCALE;
+    double sceneFixedHeight = visibleSize.height / 2.0 / GAME_SCALE;
+    double mapWidth = 1.0 * mapSize.width * tileSize.width;
+    double mapHeight = 1.0 * mapSize.height * tileSize.height;
+    auto crop = Sprite::create("/Crops/" + crop_names[1110 + rand() % 2] + "_" + std::to_string(rand() % 6 + 1) + ".png");
+    crop->setPosition(sceneFixedWidth, sceneFixedHeight);
+    crop->setAnchorPoint(Vec2(0, 0));
+    addChild(crop);
+    auto crop2 = Sprite::create("/Crops/" + crop_names[1110] + "_6.png");
+    crop2->setPosition(mapWidth - sceneFixedWidth, sceneFixedHeight);
+    crop2->setAnchorPoint(Vec2(0, 0));
+    addChild(crop2);
+    auto crop3 = Sprite::create("/Crops/" + crop_names[1110] + "_6.png");
+    crop3->setPosition(sceneFixedWidth, mapHeight - sceneFixedHeight);
+    crop3->setAnchorPoint(Vec2(0, 0));
+    addChild(crop3);
+    auto crop4 = Sprite::create("/Crops/" + crop_names[1110] + "_6.png");
+    crop4->setPosition(mapWidth - sceneFixedWidth, mapHeight - sceneFixedHeight);
+    crop4->setAnchorPoint(Vec2(0, 0));
+    addChild(crop4);
 
     // 初始化人物
     auto farmer = Player::create();
     motionManager.add_movableObject(farmer);
+    
     farmer->setTiledMap(map);
+    farmer->setAnchorPoint(Vec2(0, 0));
     farmer->add_part("/motion/walk_up/body/body_walk_up_0.png", "body");
     farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
 
-    farmer->setScale(1);
-    farmer->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 + 50));
+    farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
 
     for (auto part : farmer->get_parts()) {
         this->addChild(part, 20);
     }
 
-    this->addChild(farmer, 20, characterID[player]);
+    this->addChild(farmer, 20, characterID[Character::player]);
+    this->setPlayer(farmer);
 
-    farmer->go(DOWN);
+    farmer->go(playerInfo.faceTo);
+    farmer->stand();
+
+    motionManager.add_movableObject(this);
+    this->go(static_cast<Direction>((playerInfo.faceTo + 2) % 4));
 
 
     //键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        log("press");
         motionManager.keyMap[keyCode] = true;
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        log("release");
         motionManager.keyMap[keyCode] = false;
-        std::cout << "release" << std::endl;
         if (keyCode == EventKeyboard::KeyCode::KEY_W ||
             keyCode == EventKeyboard::KeyCode::KEY_A ||
             keyCode == EventKeyboard::KeyCode::KEY_S ||
@@ -134,14 +175,40 @@ bool FarmScene::init()
         {
             Player* player = (Player*)this->getChildByTag(characterID[Character::player]);
             player->stand();
-            log("stand");
+            this->stopAllActions();
         }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
 
-
     return true;
+}
+
+void changeScene(std::string sceneName) {
+    if (sceneName == "Farm") {
+        playerInfo = { HOME_X, HOME_Y, DOWN };
+        changeScene(FarmScene::create());
+    }
+    else if (sceneName == "Town") {
+        playerInfo = { FARM_TO_TOWN_INIT_X, FARM_TO_TOWN_INIT_Y, RIGHT };
+        changeScene(TownScene::create());
+    }
+    else if (sceneName == "Mountain") {
+        playerInfo = { FARM_TO_MOUNTAIN_INIT_X, FARM_TO_MOUNTAIN_INIT_Y, RIGHT };
+        changeScene(MountainScene::create());
+    }
+    else if (sceneName == "Cave") {
+        playerInfo = { FARM_TO_CAVE_INIT_X, FARM_TO_CAVE_INIT_Y, UP };
+        changeScene(CaveScene::create());
+    }
+    else if (sceneName == "Woods") {
+        playerInfo = { FARM_TO_WOODS_INIT_X, FARM_TO_WOODS_INIT_Y, LEFT };
+        changeScene(WoodsScene::create());
+    }
+    else {
+        CCLOG("Wrong scene name! Please check it.");
+        throw "场景名错误";
+    }
 }
 
 
@@ -149,3 +216,4 @@ void FarmScene::menuCloseCallback(Ref* pSender)
 {
     Director::getInstance()->end();
 }
+
