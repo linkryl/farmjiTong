@@ -29,7 +29,11 @@ public:
 	virtual void moveUpdate(MotionManager* information);
 	/*virtual void attack_player(Player* playerPtr);*/
 	virtual void hitted(int score);
+	virtual void attack_player();
 	void del();
+	void regist(MotionManager* motionManager, Node* father);
+	void regist(MotionManager* motionManager, Node* father, int Zorder);
 private:
 	float lastHitTime = 0.0f; // 上次被击中的时间
+	float lastAttackTime = 0.0f; // 上次进攻的时间
 };

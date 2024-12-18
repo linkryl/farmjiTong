@@ -6,6 +6,9 @@
 #include <map>
 #include "DialogFrame.h"
 #include "MotionManager.h"
+#include "Time_system.h"
+#include "SocialInfo.h"
+#include "Monster.h"
 
 USING_NS_CC;
 
@@ -26,8 +29,21 @@ MotionManager motionManager;
 enum Character { player, Abigail };
 // 角色对应的ID
 std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
+Time_system time_system;
 void HelloWorld::update(float delta)
 {
+    time_system.update_time();
+    auto time = time_system.get_clock_time();
+    // 创建对话内容标签
+    this->removeChildByTag(69210);
+    //////// 时间检测
+    /////
+    auto contentLabel = Label::createWithTTF(std::to_string(time), "fonts/arial.ttf", 24);
+    contentLabel->setTag(69210);
+    contentLabel->setColor(Color3B::BLACK);
+    contentLabel->setPosition({ 300, 300 });
+    this->addChild(contentLabel);
+
     motionManager.update();
 }
 
@@ -50,7 +66,7 @@ bool HelloWorld::init()
     //    you may modify it.
 
     // add a "close" icon to exit the progress. it's an autorelease object
-    auto testMap = TMXTiledMap::create("Farm.tmx");
+    auto testMap = TMXTiledMap::create("town.tmx");
     testMap->setPosition(Vec2(0, 0));
     if (!testMap) {
         CCLOG("Failed to load Town.tmx");
@@ -70,8 +86,8 @@ bool HelloWorld::init()
 
     // NPC部分
     auto abigail = new NPC();
-    motionManager.add_movableObject(abigail);
-    abigail->add_part("chracters/model/Abigail/walk_down/00.png", "body");
+    abigail->add_part("characters/model/Abigail/walk_down/00.png", "body");
+    abigail->add_shadow("/shadow/shadow.png");
     abigail->setTiledMap(testMap);
     std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."}};
     abigail->add_dialogs(dialogList);
@@ -84,48 +100,37 @@ bool HelloWorld::init()
     abigail->setPosition(Vec2(615, 835));
 
     auto Abigail_parts = abigail->get_parts();
-    for (auto part : Abigail_parts)
-        this->addChild(part);
-
-
-    this->addChild(abigail, 1, characterID[Abigail]);
+    /*for (auto part : Abigail_parts)
+        this->addChild(part);*/
+    abigail->regist(&motionManager, this);
 
     // 人物部分
     auto farmer = Player::create();
-    motionManager.add_movableObject(farmer);
     farmer->setTiledMap(testMap);
     
     farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
     farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
     farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
-    farmer->add_weapon("/motion/light_hit_right/sickle/sickle_light_hit_right_5.png", "sickle");
+    farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
     farmer->add_wearing("/wearing/hat", "hat", 3);
     farmer->add_wearing("/wearing/shirt", "shirt", 2);
+    farmer->add_shadow("/shadow/shadow.png");
 
-    farmer->setLocalZOrder(2);
+    //farmer->setLocalZOrder(2);
 
     farmer->setScale(1.5);
-    //farmer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - farmer->getContentSize().height));
-
     farmer->setPosition(Vec2(600, 500));
 
-    auto farmer_parts = farmer->get_parts();
-    auto farmer_tools = farmer->get_tools();
-    auto farmer_weapons = farmer->get_weapons();
-    auto farmer_wearings = farmer->get_wearings();
-    for (auto wearing : farmer_wearings)
-        this->addChild(wearing, 5);
-    for (auto part : farmer_parts)
-        this->addChild(part);
-    for (auto tool : farmer_tools)
-        this->addChild(tool, 6);
-    for (auto weapon : farmer_weapons)
-        this->addChild(weapon, 7);
+    farmer->regist(&motionManager, this, 2);
 
-    //farmer->go(DOWN);
+    // 怪物部分
+    Bat* bat1 = (Bat*)Bat::create("monster/bat/bat_fly_0.png", 50, 100, this);
+    bat1->setPosition(200, 300);
+    bat1->regist(&motionManager, this);
 
-    this->addChild(farmer, 2, characterID[player]);
-
+    Bat* bat2 = (Bat*)Bat::create("monster/bat/bat_fly_0.png", 50, 100, this);
+    bat2->setPosition(500, 300);
+    bat2->regist(&motionManager, this);
 
 
     //键盘事件监听器
@@ -143,7 +148,7 @@ bool HelloWorld::init()
             keyCode == EventKeyboard::KeyCode::KEY_S ||
             keyCode == EventKeyboard::KeyCode::KEY_D)
         {
-            Player* player = (Player*)this->getChildByTag(114514);
+            Player* player = farmer;
             player->stand();
             log("stand");
         }

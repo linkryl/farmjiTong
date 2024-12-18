@@ -14,7 +14,7 @@ using namespace cocos2d;
 #define WEARING_TRAVELSAL(wearing) for (const auto wearing : wearings)
 
 class Player;
-enum Part_catogory { HUMAN, TOOL, WEAPON, WEARING };
+enum Part_catogory { HUMAN, TOOL, WEAPON, WEARING, SHADOW };
 
 class PlayerPart : public Sprite
 {
@@ -32,10 +32,11 @@ protected:
     Part_catogory part_catogory;
     // 名称映射到类别
     std::map<std::string, Part_catogory> nameToCatogory = { {"body", HUMAN}, {"arm", HUMAN}, {"axe", TOOL},
-        {"pickaxe", TOOL}, {"hoe", TOOL}, { "sword", WEAPON }, {"sickle", WEAPON}, {"hat", WEARING} };
+        {"pickaxe", TOOL}, {"hoe", TOOL}, { "sword", WEAPON }, {"sickle", WEAPON}, {"hat", WEARING}, {"shadow", SHADOW}};
     std::map<Motion, int> hashValue = { {GO, 147}, {LIGHT_HIT, 458}, {HEAVY_HIT, 749}, {STAND, 8674} };
     std::map<std::string, int> partNameHash = { {"body", 4556498}, {"arm", 843458}, {"axe", 43545364},
-        {"pickaxe", 56431512}, {"hoe", 54444545}, {"sword", 9522665}, {"sickle", 984213056}, {"hat", 896185}, {"hairstyle", 943690}, {"shirt", 438135}, {"pants", 940650} };
+        {"pickaxe", 56431512}, {"hoe", 54444545}, {"sword", 9522665}, {"sickle", 984213056}, {"hat", 896185}, 
+        {"hairstyle", 943690}, {"shirt", 438135}, {"pants", 940650}, {"shadow", 894541}};
 public:
     PlayerPart() : luck(0.0f), speed(1) {}
     PlayerPart(const std::string& part_name, const int width_ = 16, const int height_ = 32) : luck(0.0f), speed(1), part_name(part_name), width(width_), height(height_)
@@ -68,6 +69,8 @@ protected:
     PlayerPart* weapon;
     // 角色的衣着
     Vector<PlayerPart*> wearings;
+    // 角色的影子
+    PlayerPart* shadow;
 
     // 朝向方向
     Direction faceTo;
@@ -91,6 +94,8 @@ public:
         tmxMap = map;
     }
 
+    void regist(MotionManager* motionManager, Node* father);
+    void regist(MotionManager* motionManager, Node* father, int Zorder);
     virtual void moveUpdate(MotionManager* information);
     void setTiledMap(TMXTiledMap* map);
     TMXTiledMap* getTiledMap();
@@ -98,10 +103,12 @@ public:
     void add_part(const std::string& path, const std::string& part_name);
     void add_tool(const std::string& path, const std::string& tool_name);
     void add_weapon(const std::string& path, const std::string& weapon_name);
+    void add_shadow(const std::string& path);
     virtual void go(Direction direction);
     void heavy_hit();
     void light_hit();
     void fishing();
+    void watering();
     virtual void stand();
     void setPosition(const Vec2& vec);
     void setScale(const float scale);
@@ -109,6 +116,7 @@ public:
     PlayerPart* get_tools();
     PlayerPart* get_weapons();
     Vector<PlayerPart*> get_wearings();
+    PlayerPart* get_shadow();
 
     static Player* create();
 };

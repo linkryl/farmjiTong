@@ -65,7 +65,7 @@ void PlayerPart::go(const Direction direction, const Part_catogory catogory, con
             this->runAction(moveSpawn);
         }
     }
-    else if (catogory == TOOL || catogory == WEAPON)
+    else if (catogory == TOOL || catogory == WEAPON || catogory == SHADOW)
     {
         const size_t hash_value = partNameHash[part_name] + direction + hashValue[GO];
         moveAction->setTag(hash_value);
@@ -106,7 +106,7 @@ void PlayerPart::go(const Direction direction, const Part_catogory catogory, con
 
 void PlayerPart::stand(const Direction direction, const Part_catogory catogory)
 {
-    if (catogory != WEARING)
+    if (catogory != WEARING && catogory != SHADOW)
     {
         // 数字映射到string
         std::map<int, std::string> numToString = { {UP,"walk_up"}, {RIGHT, "walk_right"}, {LEFT, "walk_left"}, {DOWN, "walk_down"} };
@@ -240,6 +240,50 @@ Player* PlayerPart::getPlayer()
 {
     return this->player;
 }
+void Player::regist(MotionManager* motionManager, Node* father)
+{
+    motionManager->add_movableObject(this);
+    father->addChild(this);
+    auto farmer_parts = this->get_parts();
+    auto farmer_tools = this->get_tools();
+    auto farmer_weapons = this->get_weapons();
+    auto farmer_wearings = this->get_wearings();
+    auto farmer_shadow = this->get_shadow();
+    for (auto wearing : farmer_wearings)
+        father->addChild(wearing);
+    for (auto part : farmer_parts)
+        if (part->part_name == "arm")
+            father->addChild(part);
+        else
+            father->addChild(part);
+    if (farmer_tools)
+        father->addChild(farmer_tools);
+    if (farmer_weapons)
+        father->addChild(farmer_weapons);
+}
+void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
+{
+    motionManager->add_movableObject(this);
+    father->addChild(this, Zorder);
+    auto farmer_parts = this->get_parts();
+    auto farmer_tools = this->get_tools();
+    auto farmer_weapons = this->get_weapons();
+    auto farmer_wearings = this->get_wearings();
+    auto farmer_shadow = this->get_shadow();
+    for (auto wearing : farmer_wearings)
+        father->addChild(wearing, Zorder + 1);
+    for (auto part : farmer_parts)
+        if (part->part_name == "arm")
+            father->addChild(part, Zorder + 2);
+        else
+            father->addChild(part);
+    if (farmer_tools)
+        father->addChild(farmer_tools, Zorder + 3);
+    if (farmer_weapons)
+        father->addChild(farmer_weapons, Zorder + 4);
+    if (farmer_shadow)
+        father->addChild(farmer_shadow, Zorder - 6);
+}
 
 void Player::setTiledMap(TMXTiledMap* map)
 {
@@ -287,6 +331,13 @@ void Player::add_wearing(const std::string& path, const std::string& wearing_nam
     part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
     wearings.pushBack(part);
 }
+void Player::add_shadow(const std::string& path)
+{
+    auto part = PlayerPart::create(path, "shadow");
+    part->setPlayer(this);
+    part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
+    shadow = part;
+}
 
 void Player::go(Direction direction)
 {
@@ -296,12 +347,13 @@ void Player::go(Direction direction)
     {
         part->go(direction);
     }
-    tool->go(direction, TOOL);
-    weapon->go(direction, WEAPON);
     WEARING_TRAVELSAL(wearing)
     {
         wearing->go(direction, WEARING, wearingId[wearing->part_name]);
     }
+    tool->go(direction, TOOL);
+    weapon->go(direction, WEAPON);
+    shadow->go(direction, SHADOW);
 }
 
 void Player::heavy_hit()
@@ -341,20 +393,37 @@ void Player::fishing()
     }
 }
 
+void Player::watering()
+{
+    std::map<int, std::string> numToString = { {UP,"up"}, {RIGHT, "right"}, {LEFT, "left"}, {DOWN, "down"} };
+    if (faceTo != UP)
+    {
+        PLAYER_TRAVELSAL(part)
+        {
+            if (part->part_name == "arm")
+            {
+                part->setTexture("motion/watering_" + numToString[faceTo] + "/arm_watering_" + numToString[faceTo] + ".png");
+            }
+        }
+    }
+}
+
 void Player::stand()
 {
     PLAYER_TRAVELSAL(part)
     {
         part->stand(faceTo, HUMAN);
     }
-    if (tool != nullptr)
-        tool->stand(faceTo, TOOL);
-    if (weapon != nullptr)
-        weapon->stand(faceTo, WEAPON);
     WEARING_TRAVELSAL(wearing)
     {
         wearing->stand(faceTo, WEARING);
     }
+    if (tool != nullptr)
+        tool->stand(faceTo, TOOL);
+    if (weapon != nullptr)
+        weapon->stand(faceTo, WEAPON);
+    if (shadow != nullptr)
+        shadow->stand(faceTo, SHADOW);
 }
 
 void Player::setPosition(const Vec2& vec)
@@ -364,14 +433,16 @@ void Player::setPosition(const Vec2& vec)
     {
         part->setPosition(vec);
     }
-    if (tool != nullptr)
-        tool->setPosition(vec);
-    if (weapon != nullptr)
-        weapon->setPosition(vec);
     WEARING_TRAVELSAL(wearing)
     {
         wearing->setPosition(vec);
     }
+    if (tool != nullptr)
+        tool->setPosition(vec);
+    if (weapon != nullptr)
+        weapon->setPosition(vec);
+    if (shadow != nullptr)
+        shadow->setPosition(vec);
 }
 
 void Player::setScale(const float scale)
@@ -380,14 +451,16 @@ void Player::setScale(const float scale)
     {
         part->setScale(scale);
     }
-    if (tool != nullptr)
-        tool->setScale(scale);
-    if (tool != nullptr)
-        weapon->setScale(scale);
     WEARING_TRAVELSAL(wearing)
     {
         wearing->setScale(scale);
     }
+    if (tool != nullptr)
+        tool->setScale(scale);
+    if (weapon != nullptr)
+        weapon->setScale(scale);
+    if (shadow != nullptr)
+        shadow->setScale(scale);
 }
 
 void Player::moveUpdate(MotionManager* information)
@@ -400,6 +473,7 @@ void Player::moveUpdate(MotionManager* information)
     auto heavy_hit = cocos2d::EventKeyboard::KeyCode::KEY_K;
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
     auto fishing = cocos2d::EventKeyboard::KeyCode::KEY_F;
+    auto watering = cocos2d::EventKeyboard::KeyCode::KEY_L;
 
     bool move = false;
     Direction direction;
@@ -445,11 +519,17 @@ void Player::moveUpdate(MotionManager* information)
     // 钓鱼
     else if (information->keyMap[fishing] && !move)
         this->fishing();
-    auto currentPosition = this->parts.at(0)->getPosition();
+    // 浇水
+    else if (information->keyMap[watering] && !move)
+        this->watering();
+    auto currentPosition = pos;
     currentPosition.x += this->getScaleX() / 2;
     currentPosition.y += this->getScaleY() / 2;
 
+    // 更新位置
     information->playerPosition = currentPosition;
+    // 更新血量
+    health += information->deltaPlayerHealth;
 }
 
 Vector<PlayerPart*> Player::get_parts()
@@ -469,6 +549,10 @@ PlayerPart* Player::get_weapons()
 Vector<PlayerPart*> Player::get_wearings()
 {
     return wearings;
+}
+PlayerPart* Player::get_shadow()
+{
+    return shadow;
 }
 
 Player* Player::create()
@@ -503,7 +587,7 @@ void NPC::communicate()
         communicating = false;
         });
     // 设置对话框头像
-    dialogFrame->setAvatar("chracters/portraits/Abigail/Abigail_common.png");
+    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_common.png");
     dialogFrame->setDialogList(dialogs);
 
 }
@@ -522,7 +606,7 @@ void NPC::communicate(const std::string& text, const std::string& emotion)
         communicating = false;
         });
     // 设置对话框头像
-    dialogFrame->setAvatar("chracters/portraits/Abigail/Abigail_"+ emotion +".png");
+    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_"+ emotion +".png");
 }
 
 void NPC::moveUpdate(MotionManager * information)

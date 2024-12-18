@@ -56,6 +56,16 @@ void Bat::go(const Vec2& direction)
     }
 }
 
+void Bat::regist(MotionManager* motionManager, Node* father)
+{
+    motionManager->add_movableObject(this);
+    father->addChild(this);
+}
+void Bat::regist(MotionManager* motionManager, Node* father, int Zorder)
+{
+    motionManager->add_movableObject(this);
+    father->addChild(this, Zorder);
+}
 void Bat::moveUpdate(MotionManager* information)
 {
     motionManager = information;
@@ -70,6 +80,8 @@ void Bat::moveUpdate(MotionManager* information)
     const int dis = abs(playerPosition.x - batPosition.x) + abs(playerPosition.y - batPosition.y);
     if (dis < 40 && information->keyMap[light_hit])
         hitted(10);
+    if (dis < 20 && information->keyMap[light_hit])
+        attack_player();
 }
 
 void Bat::hitted(int score)
@@ -98,6 +110,19 @@ void Bat::hitted(int score)
     {
         del();
     }
+}
+void Bat::attack_player()
+{
+    // 获取当前时间
+    float currentTime = Director::getInstance()->getTotalFrames() * Director::getInstance()->getAnimationInterval();
+    // 检查时间间隔
+    if (currentTime - lastAttackTime < 0.1f)
+    {
+        return; // 如果时间间隔小于 0.1 秒，直接返回，不执行进攻逻辑
+    }
+    // 更新上次攻击的时间
+    lastAttackTime = currentTime;
+    motionManager->deltaPlayerHealth -= attack;
 }
 
 void Bat::del()
