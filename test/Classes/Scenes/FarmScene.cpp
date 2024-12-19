@@ -77,7 +77,6 @@ bool FarmScene::init()
     this->setTiledMap(map);
 
     this->setAnchorPoint(Vec2(0, 0));
-    //this->setPosition(Vec2(-GAME_SCALE * (playerInfo.tileX * 8 + 8), -GAME_SCALE * (playerInfo.tileY * 8 + 8)));
     this->setPosition(getMiddlePosition(playerPosition));
     this->setScale(GAME_SCALE);
 
@@ -110,40 +109,14 @@ bool FarmScene::init()
             //auto crop = Sprite::create("/crops/" + crop_names[info.type] + "_6");
 
             auto crop = Sprite::create("/Animals/" + crop_names[2110] + "_1.png");
-            crop->setPosition(GAME_SCALE * (16 * (LIVE_FARM_OFFSET_X + i * 3) - 8), GAME_SCALE * (16 * LIVE_FARM_OFFSET_Y + 8));
+            crop->setPosition((16 * (LIVE_FARM_OFFSET_X + i * 3) - 8), (16 * LIVE_FARM_OFFSET_Y + 8));
             crop->setAnchorPoint(Vec2(0, 0));
-            //crop->setScale(GAME_SCALE);
             addChild(crop);
         }
     }
 
-    // 测试点
-    Size mapSize = map->getMapSize();
-    Size tileSize = map->getTileSize();
-    double sceneFixedWidth = visibleSize.width / 2.0 / GAME_SCALE;
-    double sceneFixedHeight = visibleSize.height / 2.0 / GAME_SCALE;
-    double mapWidth = 1.0 * mapSize.width * tileSize.width;
-    double mapHeight = 1.0 * mapSize.height * tileSize.height;
-    auto crop = Sprite::create("/Crops/" + crop_names[1110 + rand() % 2] + "_" + std::to_string(rand() % 6 + 1) + ".png");
-    crop->setPosition(sceneFixedWidth, sceneFixedHeight);
-    crop->setAnchorPoint(Vec2(0, 0));
-    addChild(crop);
-    auto crop2 = Sprite::create("/Crops/" + crop_names[1110] + "_6.png");
-    crop2->setPosition(mapWidth - sceneFixedWidth, sceneFixedHeight);
-    crop2->setAnchorPoint(Vec2(0, 0));
-    addChild(crop2);
-    auto crop3 = Sprite::create("/Crops/" + crop_names[1110] + "_6.png");
-    crop3->setPosition(sceneFixedWidth, mapHeight - sceneFixedHeight);
-    crop3->setAnchorPoint(Vec2(0, 0));
-    addChild(crop3);
-    auto crop4 = Sprite::create("/Crops/" + crop_names[1110] + "_6.png");
-    crop4->setPosition(mapWidth - sceneFixedWidth, mapHeight - sceneFixedHeight);
-    crop4->setAnchorPoint(Vec2(0, 0));
-    addChild(crop4);
-
     // 初始化人物
     auto farmer = Player::create();
-    //motionManager.add_movableObject(farmer);
     
     farmer->setTiledMap(map);
     farmer->setAnchorPoint(Vec2(0, 0));
@@ -177,9 +150,6 @@ bool FarmScene::init()
 
     abigail->setLocalZOrder(1);
 
-    //abigail->setScale(1.5);
-    //farmer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - farmer->getContentSize().height));
-
     abigail->setPosition(Vec2(615, 835));
 
     auto Abigail_parts = abigail->get_parts();
@@ -203,6 +173,7 @@ bool FarmScene::init()
             Player* player = farmer;
             player->stand();
             this->stopAllActions();
+            this->returnMiddlePosition();
         }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);

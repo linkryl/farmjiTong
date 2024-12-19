@@ -27,4 +27,9 @@ public:
 	Vec2 getMiddlePosition(double x, double y);
 
 	Vec2 getMiddlePosition(Vec2 position);
+
+	// 当前场景处于(x, y)像素坐标时，进行修正，防止露黑边
+	Vec2 getCorrectionPosition(Vec2 position);
+
+	void returnMiddlePosition();
 };
