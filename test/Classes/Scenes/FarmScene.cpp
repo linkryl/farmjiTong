@@ -14,6 +14,7 @@
 #include "../Systems/Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
+#include <memory>
 
 USING_NS_CC;
 
@@ -44,7 +45,7 @@ Scene* FarmScene::createScene()
 
 void FarmScene::update(float delta)
 {
-    motionManager.update();
+    getMotionManager()->update();
 }
 
 bool FarmScene::init()
@@ -59,8 +60,8 @@ bool FarmScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    //auto playerPosition = Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8);
-    auto playerPosition = Vec2(100, 400);
+    auto playerPosition = Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8);
+    //auto playerPosition = Vec2(100, 400);
 
     // 初始化地图
     auto map = TMXTiledMap::create("Farm.tmx");
@@ -130,15 +131,14 @@ bool FarmScene::init()
 
     farmer->setPosition(playerPosition);
 
-    farmer->regist(&motionManager, this, 2);
+    farmer->regist(getMotionManager(), this, 2);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
 
     this->setPlayer(farmer);
 
-    motionManager.add_movableObject(this);
-    //this->go(opposite(playerInfo.faceTo));
+    getMotionManager()->add_movableObject(this);
 
     // NPC部分
     auto abigail = new NPC();
@@ -155,16 +155,16 @@ bool FarmScene::init()
     auto Abigail_parts = abigail->get_parts();
     /*for (auto part : Abigail_parts)
         this->addChild(part);*/
-    abigail->regist(&motionManager, this);
+    abigail->regist(getMotionManager(), this);
 
 
     // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        motionManager.keyMap[keyCode] = true;
+        getMotionManager()->keyMap[keyCode] = true;
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        motionManager.keyMap[keyCode] = false;
+        getMotionManager()->keyMap[keyCode] = false;
         if (keyCode == EventKeyboard::KeyCode::KEY_W ||
             keyCode == EventKeyboard::KeyCode::KEY_A ||
             keyCode == EventKeyboard::KeyCode::KEY_S ||
@@ -182,26 +182,25 @@ bool FarmScene::init()
     return true;
 }
 
-void changeScene(std::string sceneName) {
+void FarmScene::changeScene(std::string sceneName) {
     if (sceneName == "Farm") {
-        playerInfo = { HOME_X, HOME_Y, DOWN };
-        changeScene(FarmScene::create());
+        SceneUtil::goHome();
     }
     else if (sceneName == "Town") {
         playerInfo = { FARM_TO_TOWN_INIT_X, FARM_TO_TOWN_INIT_Y, RIGHT };
-        changeScene(TownScene::create());
+        SceneUtil::changeScene(TownScene::create());
     }
     else if (sceneName == "Mountain") {
         playerInfo = { FARM_TO_MOUNTAIN_INIT_X, FARM_TO_MOUNTAIN_INIT_Y, RIGHT };
-        changeScene(MountainScene::create());
+        SceneUtil::changeScene(MountainScene::create());
     }
     else if (sceneName == "Cave") {
         playerInfo = { FARM_TO_CAVE_INIT_X, FARM_TO_CAVE_INIT_Y, UP };
-        changeScene(CaveScene::create());
+        SceneUtil::changeScene(CaveScene::create());
     }
     else if (sceneName == "Woods") {
         playerInfo = { FARM_TO_WOODS_INIT_X, FARM_TO_WOODS_INIT_Y, LEFT };
-        changeScene(WoodsScene::create());
+        SceneUtil::changeScene(WoodsScene::create());
     }
     else {
         CCLOG("Wrong scene name! Please check it.");

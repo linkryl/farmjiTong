@@ -1,12 +1,19 @@
 #pragma once
 #include "cocos2d.h"
 #include "Player.h"
+#include "MotionManager.h"
+
+USING_NS_CC;
 
 class MovableScene : public Scene, public Movable {
 private:
 	TMXTiledMap* tmxMap;
 	Player* player;
+	MotionManager motionManager;
 public:
+	MotionManager* getMotionManager() {
+		return &(this->motionManager);
+	}
 	void setTiledMap(TMXTiledMap* tmxMap) {
 		this->tmxMap = tmxMap;
 	}

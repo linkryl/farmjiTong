@@ -20,8 +20,7 @@ void MovableScene::go(Direction direction) {
             break;
         }
     }
-    CCLOG("Scene move distance: %d", distance);
-    //direction = opposite(direction);
+
     Vec2 moveVec2 = generateVec2(opposite(direction), distance * GAME_SCALE);
     auto moveAction = MoveBy::create(upper_limit * frameGap * distance / originDistance, moveVec2);
 
@@ -39,8 +38,8 @@ void MovableScene::go(Direction direction) {
     }
 }
 
-void MovableScene::moveUpdate(MotionManager* information)
-{
+void MovableScene::moveUpdate(MotionManager* information) {
+
     auto left = EventKeyboard::KeyCode::KEY_A;
     auto right = EventKeyboard::KeyCode::KEY_D;
     auto up = EventKeyboard::KeyCode::KEY_W;
@@ -93,25 +92,6 @@ Vec2 MovableScene::getMiddlePosition(double x, double y) {
     CCLOG("posX: %2.f, posY: %2.f", posX, posY);
 
     // 在边缘位置则需修正
-    if (0) {
-        if (posX - eps >= mapWidth * GAME_SCALE - visibleSize.width) {
-            CCLOG("x less");
-            posX = visibleSize.width - mapWidth * GAME_SCALE;
-        }
-        else if (posX + eps <= 0) {
-            CCLOG("x more");
-            posX = 0;
-        }
-        if (posY - eps >= mapHeight * GAME_SCALE - visibleSize.height) {
-            CCLOG("y less");
-            posY = visibleSize.height - mapHeight * GAME_SCALE;
-        }
-        else if (posY + eps <= 0) {
-            CCLOG("y more");
-            posY = 0;
-        }
-    }
-    
     return getCorrectionPosition(Vec2(-posX, -posY));
 }
 

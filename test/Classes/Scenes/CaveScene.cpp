@@ -34,7 +34,7 @@ Scene* CaveScene::createScene()
 
 void CaveScene::update(float delta)
 {
-    motionManager.update();
+    getMotionManager()->update();
 }
 
 bool CaveScene::init()
@@ -85,23 +85,23 @@ bool CaveScene::init()
 
     farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
 
-    farmer->regist(&motionManager, this, 2);
+    farmer->regist(getMotionManager(), this, 2);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
 
     this->setPlayer(farmer);
 
-    motionManager.add_movableObject(this);
+    getMotionManager()->add_movableObject(this);
 
     //¼üÅÌÊÂ¼þ¼àÌýÆ÷
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        motionManager.keyMap[keyCode] = true;
+        getMotionManager()->keyMap[keyCode] = true;
 
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        motionManager.keyMap[keyCode] = false;
+        getMotionManager()->keyMap[keyCode] = false;
 
         if (keyCode == EventKeyboard::KeyCode::KEY_W ||
             keyCode == EventKeyboard::KeyCode::KEY_A ||
@@ -111,6 +111,7 @@ bool CaveScene::init()
             Player* player = farmer;
             player->stand();
             this->stopAllActions();
+            this->returnMiddlePosition();
         }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
