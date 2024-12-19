@@ -261,7 +261,7 @@ void Player::regist(MotionManager* motionManager, Node* father)
     auto farmer_tools = this->get_tools();
     auto farmer_weapons = this->get_weapons();
     auto farmer_wearings = this->get_wearings();
-    //auto farmer_shadow = this->get_shadow();
+    auto farmer_shadow = this->get_shadow();
     for (auto wearing : farmer_wearings)
         father->addChild(wearing);
     for (auto part : farmer_parts)
@@ -282,7 +282,7 @@ void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
     auto farmer_tools = this->get_tools();
     auto farmer_weapons = this->get_weapons();
     auto farmer_wearings = this->get_wearings();
-    //auto farmer_shadow = this->get_shadow();
+    auto farmer_shadow = this->get_shadow();
     for (auto wearing : farmer_wearings)
         father->addChild(wearing, Zorder + 1);
     for (auto part : farmer_parts)
@@ -294,8 +294,8 @@ void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
         father->addChild(farmer_tools, Zorder + 3);
     if (farmer_weapons)
         father->addChild(farmer_weapons, Zorder + 4);
-    //if (farmer_shadow)
-    //    father->addChild(farmer_shadow, Zorder - 6);
+    if (farmer_shadow)
+        father->addChild(farmer_shadow, Zorder - 6);
 }
 
 void Player::add_part(const std::string& path, const std::string& part_name)
