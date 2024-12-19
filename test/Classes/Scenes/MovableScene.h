@@ -25,4 +25,6 @@ public:
 	// 计算以(x, y)为中心点的场景所处坐标
 	// x, y 为像素坐标
 	Vec2 getMiddlePosition(double x, double y);
+
+	Vec2 getMiddlePosition(Vec2 position);
 };

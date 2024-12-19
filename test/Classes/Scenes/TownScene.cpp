@@ -64,52 +64,54 @@ bool TownScene::init()
     // 场景中绑定地图
     this->setTiledMap(map);
     this->setAnchorPoint(Vec2(0, 0));
-    this->setPosition(Vec2(-GAME_SCALE * (playerInfo.tileX * 8 + 8), -GAME_SCALE * (playerInfo.tileY * 8 + 8)));
+    //this->setPosition(Vec2(-GAME_SCALE * (playerInfo.tileX * 8 + 8), -GAME_SCALE * (playerInfo.tileY * 8 + 8)));
+    this->setPosition(getMiddlePosition(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
     this->setScale(GAME_SCALE);
 
 
     // 初始化人物
     auto farmer = Player::create();
-    motionManager.add_movableObject(farmer);
+
     farmer->setTiledMap(map);
-    farmer->add_part("/motion/walk_up/body/body_walk_up_0.png", "body");
-    farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
+    farmer->setAnchorPoint(Vec2(0, 0));
+    farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
+    farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
+    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
+    farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
+    farmer->add_wearing("/wearing/hat", "hat", 3);
+    farmer->add_wearing("/wearing/shirt", "shirt", 2);
+    farmer->add_shadow("/shadow/shadow.png");
 
     farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
 
-    for (auto part : farmer->get_parts()) {
-        this->addChild(part, 20);
-    }
-
-    this->addChild(farmer, 20, characterID[Character::player]);
-    this->setPlayer(farmer);
+    farmer->regist(&motionManager, this, 2);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
 
+    this->setPlayer(farmer);
+
     motionManager.add_movableObject(this);
+    //this->go(opposite(playerInfo.faceTo));
 
 
     //键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        log("press");
         motionManager.keyMap[keyCode] = true;
 
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        log("release");
         motionManager.keyMap[keyCode] = false;
-        std::cout << "release" << std::endl;
+
         if (keyCode == EventKeyboard::KeyCode::KEY_W ||
             keyCode == EventKeyboard::KeyCode::KEY_A ||
             keyCode == EventKeyboard::KeyCode::KEY_S ||
             keyCode == EventKeyboard::KeyCode::KEY_D)
         {
-            Player* player = (Player*)this->getChildByTag(characterID[Character::player]);
+            Player* player = farmer;
             player->stand();
             this->stopAllActions();
-            log("stand");
         }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);

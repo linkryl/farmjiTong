@@ -59,6 +59,9 @@ bool FarmScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
+    //auto playerPosition = Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8);
+    auto playerPosition = Vec2(100, 400);
+
     // 初始化地图
     auto map = TMXTiledMap::create("Farm.tmx");
     auto map_front = TMXTiledMap::create("Farm_Front.tmx");
@@ -75,7 +78,7 @@ bool FarmScene::init()
 
     this->setAnchorPoint(Vec2(0, 0));
     //this->setPosition(Vec2(-GAME_SCALE * (playerInfo.tileX * 8 + 8), -GAME_SCALE * (playerInfo.tileY * 8 + 8)));
-    this->setPosition(getMiddlePosition(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
+    this->setPosition(getMiddlePosition(playerPosition));
     this->setScale(GAME_SCALE);
 
     // 初始化农田
@@ -144,25 +147,45 @@ bool FarmScene::init()
     
     farmer->setTiledMap(map);
     farmer->setAnchorPoint(Vec2(0, 0));
-    farmer->add_part("/motion/walk_up/body/body_walk_up_0.png", "body");
-    farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
+    farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
+    farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
+    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
+    farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
+    farmer->add_wearing("/wearing/hat", "hat", 3);
+    farmer->add_wearing("/wearing/shirt", "shirt", 2);
+    farmer->add_shadow("/shadow/shadow.png");
 
-    farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
-    /*
-    for (auto part : farmer->get_parts()) {
-        this->addChild(part, 20);
-    }
+    farmer->setPosition(playerPosition);
 
-    this->addChild(farmer, 20, characterID[Character::player]);
-    this->setPlayer(farmer);
-    */
     farmer->regist(&motionManager, this, 2);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
 
-    //motionManager.add_movableObject(this);
-    this->go(opposite(playerInfo.faceTo));
+    this->setPlayer(farmer);
+
+    motionManager.add_movableObject(this);
+    //this->go(opposite(playerInfo.faceTo));
+
+    // NPC部分
+    auto abigail = new NPC();
+    abigail->add_part("characters/model/Abigail/walk_down/00.png", "body");
+    abigail->add_shadow("/shadow/shadow.png");
+    abigail->setTiledMap(map);
+    std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."} };
+    abigail->add_dialogs(dialogList);
+
+    abigail->setLocalZOrder(1);
+
+    //abigail->setScale(1.5);
+    //farmer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - farmer->getContentSize().height));
+
+    abigail->setPosition(Vec2(615, 835));
+
+    auto Abigail_parts = abigail->get_parts();
+    /*for (auto part : Abigail_parts)
+        this->addChild(part);*/
+    abigail->regist(&motionManager, this);
 
 
     // 键盘事件监听器

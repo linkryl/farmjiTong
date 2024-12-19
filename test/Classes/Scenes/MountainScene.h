@@ -1,10 +1,11 @@
 #pragma once
 #include "cocos2d.h"
 #include "Player.h"
+#include "MovableScene.h"
 
 USING_NS_CC;
 
-class MountainScene : public cocos2d::Scene {
+class MountainScene : public MovableScene {
 public:
     static cocos2d::Scene* createScene();
 
@@ -15,5 +16,7 @@ public:
     void menuCloseCallback(cocos2d::Ref* pSender);
 
     CREATE_FUNC(MountainScene);
+
+    void changeScene(std::string sceneName);
 
 };

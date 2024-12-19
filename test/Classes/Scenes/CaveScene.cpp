@@ -1,74 +1,40 @@
-#include "CaveScene.h"
-#include "Utils/MapUtil.h"
-#include "Player.h"
-#include "SimpleAudioEngine.h"
-#include "Utils/SceneUtil.h"
 #include <iostream>
 #include <map>
-
-extern int all_var;
+#include "SimpleAudioEngine.h"
+#include "FarmScene.h"
+#include "TownScene.h"
+#include "WoodsScene.h"
+#include "CaveScene.h"
+#include "MountainScene.h"
+#include "Player.h"
+#include "../Utils/MapUtil.h"
+#include "../Utils/SceneUtil.h"
+#include "../Systems/Farm_system.h"
+#include "../Systems/Livestock_farm_system.h"
+#include "../Systems/Time_system.h"
+#include "MotionManager.h"
+#include "Constant.h"
 
 USING_NS_CC;
+
+// 全局时间系统
+extern Time_system time_system;
+// 需维护的玩家信息
+extern PlayerInfo playerInfo;
+// 运动管理器
+static MotionManager motionManager;
+enum Character { player, Abigail };
+// 角色对应的ID
+static std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
 
 Scene* CaveScene::createScene()
 {
     return CaveScene::create();
 }
 
-static std::map<EventKeyboard::KeyCode, bool> keyMap;
-static bool mouse_down = false;
-
 void CaveScene::update(float delta)
 {
-    auto left = cocos2d::EventKeyboard::KeyCode::KEY_A;
-    auto right = cocos2d::EventKeyboard::KeyCode::KEY_D;
-    auto up = cocos2d::EventKeyboard::KeyCode::KEY_W;
-    auto down = cocos2d::EventKeyboard::KeyCode::KEY_S;
-    auto light_hit = cocos2d::EventKeyboard::KeyCode::KEY_J;
-    auto heavy_hit = cocos2d::EventKeyboard::KeyCode::KEY_K;
-
-    int offsetX = 0;
-    Direction direction;
-    if (keyMap[left])
-    {
-        offsetX = -4;
-        direction = LEFT;
-    }
-    else if (keyMap[right])
-    {
-        offsetX = 4;
-        direction = RIGHT;
-    }
-    else if (keyMap[down])
-    {
-        offsetX = 4;
-        direction = DOWN;
-    }
-    else if (keyMap[up])
-    {
-        offsetX = 4;
-        direction = UP;
-    }
-
-    Player* player = (Player*)this->getChildByName("meow");
-    auto pos = player->get_parts().at(0)->getPosition();
-    if (player) {
-        //CCLOG("Position %f %f", pos.x, pos.y);
-    }
-    if (offsetX != 0)
-    {
-        if (!can_move(player->getTiledMap(), pos, direction)) return;
-        player->go(direction);
-    }
-
-    if (keyMap[light_hit])
-    {
-        player->light_hit();
-    }
-    else if (keyMap[heavy_hit])
-    {
-        player->heavy_hit();
-    }
+    motionManager.update();
 }
 
 bool CaveScene::init()
@@ -89,37 +55,63 @@ bool CaveScene::init()
     // 设置地图的位置
     map->setPosition(Vec2(0, 0));
     map_front->setPosition(Vec2(0, 0));
-
+    // 设置地图的位置
+    map->setPosition(Vec2(0, 0));
+    map_front->setPosition(Vec2(0, 0));
+    map->setAnchorPoint(Vec2(0, 0));
+    map_front->setAnchorPoint(Vec2(0, 0));
     // 将地图添加到场景中
     this->addChild(map);
     this->addChild(map_front, 80);
+    // 场景中绑定地图
+    this->setTiledMap(map);
+    this->setAnchorPoint(Vec2(0, 0));
+    //this->setPosition(Vec2(-GAME_SCALE * (playerInfo.tileX * 8 + 8), -GAME_SCALE * (playerInfo.tileY * 8 + 8)));
+    this->setPosition(getMiddlePosition(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
+    this->setScale(GAME_SCALE);
 
+    // 初始化人物
     auto farmer = Player::create();
+
     farmer->setTiledMap(map);
-    farmer->add_part("/motion/walk_up/body/body_walk_up_0.png", "body");
-    farmer->add_part("/motion/walk_up/arm/arm_walk_up_0.png", "arm");
+    farmer->setAnchorPoint(Vec2(0, 0));
+    farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
+    farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
+    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
+    farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
+    farmer->add_wearing("/wearing/hat", "hat", 3);
+    farmer->add_wearing("/wearing/shirt", "shirt", 2);
+    farmer->add_shadow("/shadow/shadow.png");
 
-    farmer->setScale(1.5);
-    farmer->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 + 50));
-    CCLOG("(%f, %f)", farmer->getPositionX(), farmer->getPositionY());
-    auto farmer_parts = farmer->get_parts();
+    farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
 
-    for (auto part : farmer_parts) {
-        this->addChild(part);
-    }
+    farmer->regist(&motionManager, this, 2);
 
-    this->addChild(farmer, 2, "meow");
-    CCLOG("(%f, %f)", farmer->getPositionX(), farmer->getPositionY());
+    farmer->go(playerInfo.faceTo);
+    farmer->stand();
 
-    // 键盘事件监听器
+    this->setPlayer(farmer);
+
+    motionManager.add_movableObject(this);
+
+    //键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        log("press");
-        keyMap[keyCode] = true;
+        motionManager.keyMap[keyCode] = true;
+
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
-        log("release");
-        keyMap[keyCode] = false;
+        motionManager.keyMap[keyCode] = false;
+
+        if (keyCode == EventKeyboard::KeyCode::KEY_W ||
+            keyCode == EventKeyboard::KeyCode::KEY_A ||
+            keyCode == EventKeyboard::KeyCode::KEY_S ||
+            keyCode == EventKeyboard::KeyCode::KEY_D)
+        {
+            Player* player = farmer;
+            player->stand();
+            this->stopAllActions();
+        }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 

@@ -77,6 +77,7 @@ Vec2 MovableScene::getMiddlePosition(double x, double y) {
     Size mapSize = getTiledMap()->getMapSize();
     Size tileSize = getTiledMap()->getTileSize();
     auto visibleSize = Director::getInstance()->getVisibleSize();
+
     double halfWindowWidth = visibleSize.width / 2.0;
     double halfWindowHeight = visibleSize.height / 2.0;
 
@@ -88,17 +89,32 @@ Vec2 MovableScene::getMiddlePosition(double x, double y) {
 
     double posX = x * GAME_SCALE - halfWindowWidth;
     double posY = y * GAME_SCALE - halfWindowHeight;
-    if (posX < sceneFixedWidth) {
-        posX = sceneFixedWidth;
+
+    CCLOG("posX: %2.f, posY: %2.f", posX, posY);
+
+    // 在边缘位置则需修正
+    if (1) {
+        if (posX - eps >= mapWidth * GAME_SCALE - visibleSize.width) {
+            CCLOG("x less");
+            posX = visibleSize.width - mapWidth * GAME_SCALE;
+        }
+        else if (posX + eps <= 0) {
+            CCLOG("x more");
+            posX = 0;
+        }
+        if (posY - eps >= mapHeight * GAME_SCALE - visibleSize.height) {
+            CCLOG("y less");
+            posY = visibleSize.height - mapHeight * GAME_SCALE;
+        }
+        else if (posY + eps <= 0) {
+            CCLOG("y more");
+            posY = 0;
+        }
     }
-    else if (posX > mapWidth - sceneFixedWidth) {
-        posX = mapWidth - sceneFixedWidth;
-    }
-    if (posY < sceneFixedHeight) {
-        posY = sceneFixedHeight;
-    }
-    else if (posY > mapHeight - sceneFixedHeight) {
-        posY = mapHeight - sceneFixedHeight;
-    }
+    
     return Vec2(-posX, -posY);
+}
+
+Vec2 MovableScene::getMiddlePosition(Vec2 position) {
+    return getMiddlePosition(position.x, position.y);
 }
