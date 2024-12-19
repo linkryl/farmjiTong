@@ -2,6 +2,7 @@
 #include "DialogFrame.h"
 #include "Constant.h"
 #include <functional>
+#include "Utils/SceneUtil.h"
 
 void PlayerPart::go(const Direction direction, const Part_catogory catogory, const int id)
 {
@@ -503,9 +504,7 @@ void Player::moveUpdate(MotionManager* information)
     }
 
     auto pos = this->get_parts().at(0)->getPosition();
-    if (this) {
-        //CCLOG("Position %f %f", pos.x, pos.y);
-    }
+
     if (move)
     {
         if (!canMove(this->getTiledMap(), pos, direction)) return;
@@ -627,6 +626,7 @@ void NPC::moveUpdate(MotionManager* information)
         if (dis < dis_limit)
         {
             this->communicate();
+            SceneUtil::goHome();
         }
     }
     else if (information->keyMap[gift])

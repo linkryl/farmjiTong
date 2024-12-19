@@ -2,9 +2,12 @@
 #include <cocos2d.h>
 #include <map>
 #include <vector>
+#include <memory>
+
 using namespace cocos2d;
 
 class Movable;
+
 struct MotionManager
 {
 	// 环境参量
@@ -22,8 +25,20 @@ struct MotionManager
 
 	// 好感度系统
 
+
+	// 是否结束
+	bool isReplaced = false;
+
+	void setEnd() {
+		isReplaced = true;
+	}
+	bool isEnd() {
+		return isReplaced;
+	}
+
 	// 对象群体
 	std::vector<Movable*> movableObjects;
+
 	// 更新函数
 	void update();
 	// 添加对象的函数

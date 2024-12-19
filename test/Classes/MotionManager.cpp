@@ -7,14 +7,19 @@ using namespace cocos2d;
 
 void MotionManager::update()
 {
+	if (isEnd()) {
+		return;
+	}
 	for (auto object : movableObjects)
 	{
 		try
 		{
 			object->moveUpdate(this);
+
 		}
-		catch (std::bad_alloc)
+		catch (std::exception e)
 		{
+			CCLOG(e.what());
 			continue;
 		}
 	}
