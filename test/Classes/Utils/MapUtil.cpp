@@ -53,42 +53,20 @@ bool canMove(TMXTiledMap* tmxMap, const Vec2 position, Direction direction, bool
 
     if (isScene) {
         auto visibleSize = Director::getInstance()->getVisibleSize();
-        double sceneFixedWidth = visibleSize.width / 2.0 / GAME_SCALE + COLLISION_BOX_SIZE;
-        double sceneFixedHeight = visibleSize.height / 2.0 / GAME_SCALE + COLLISION_BOX_SIZE;
+        double sceneFixedWidth = visibleSize.width / 2.0 / GAME_SCALE + COLLISION_BOX_SIZE * 0;
+        double sceneFixedHeight = visibleSize.height / 2.0 / GAME_SCALE + COLLISION_BOX_SIZE * 0;
 
         double mapWidth = 1.0 * mapSize.width * tileSize.width;
         double mapHeight = 1.0 * mapSize.height * tileSize.height;
-        
-        CCLOG("%f %f %f %f", sceneFixedWidth, mapWidth - sceneFixedWidth, sceneFixedHeight, mapHeight - sceneFixedHeight);
-        CCLOG("now pos %f %f", position.x, position.y);
-        
 
         Vec2 toPos = modifyVec2(position, direction, 1);
-        if ((direction == LEFT || direction == RIGHT) && (toPos.x + eps <= sceneFixedWidth * 1 || toPos.x - eps >= (mapWidth - sceneFixedWidth) * 1)) {
+        if ((direction == LEFT || direction == RIGHT) && (toPos.x + eps <= sceneFixedWidth || toPos.x - eps >= mapWidth - sceneFixedWidth)) {
             return false;
         }
-        if ((direction == UP || direction == DOWN) && (toPos.y + eps <= sceneFixedHeight * 1 || toPos.y - eps >= (mapHeight - sceneFixedHeight) * 1)) {
+        if ((direction == UP || direction == DOWN) && (toPos.y + eps <= sceneFixedHeight || toPos.y - eps >= mapHeight - sceneFixedHeight)) {
             return false;
         }
-        /*
-        auto scenePosition = Director::getInstance()->getRunningScene()->getPosition();
-        auto nextScenePosition = modifyVec2(scenePosition, opposite(direction), moveDistance);
-        CCLOG("%2.f, %2.f", nextScenePosition.x, nextScenePosition.y);
-        if (nextScenePosition.x > -1279) {
-            //goto TAG1;
-        }
-        float width = mapSize.width * tileSize.width * GAME_SCALE;
-        float height = mapSize.height * tileSize.height * GAME_SCALE;
-        auto visibleSize = Director::getInstance()->getVisibleSize();
-        if (nextScenePosition.x <= visibleSize.width - width - eps || nextScenePosition.x >= eps) {
-            return false;
-        }
-        if (nextScenePosition.y <= visibleSize.height - height - eps || nextScenePosition.y >= eps) {
-            return false;
-        }
-        */
     }
-    //TAG1:
     // 计算下一刻要到达的位置的坐标
     Vec2 toPos = modifyVec2(position, direction, 1 + COLLISION_BOX_SIZE);
 
@@ -97,7 +75,7 @@ bool canMove(TMXTiledMap* tmxMap, const Vec2 position, Direction direction, bool
         || toPos.x - eps >= mapSize.width * tileSize.width
         || toPos.y - eps >= mapSize.height * tileSize.width)
     {
-        CCLOG("out of border");
+        //CCLOG("out of border");
         return false;
     }
 
@@ -107,7 +85,7 @@ bool canMove(TMXTiledMap* tmxMap, const Vec2 position, Direction direction, bool
     // 获取地图Buildings层
     auto layer = tmxMap->getLayer("Buildings");
     if (nullptr == layer) {
-        CCLOG("Buildings layer not found");
+        //CCLOG("Buildings layer not found");
         return false;
     }
     int id = layer->getTileGIDAt(tilePos);
