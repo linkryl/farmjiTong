@@ -22,9 +22,34 @@ namespace SceneUtil {
 		director->replaceScene(scene);
 	}
 
-	void goHome() {
-		playerInfo = { HOME_X, HOME_Y, DOWN };
+	void gotoFarm(int x, int y, Direction faceTo) {
+		playerInfo = { x, y, faceTo };
 		changeScene(FarmScene::create());
+	}
+
+	void gotoHouse(int x, int y, Direction faceTo) {
+		playerInfo = { x, y, faceTo };
+		changeScene(FarmHouseScene::create());
+	}
+
+	void gotoTown(int x, int y, Direction faceTo) {
+		playerInfo = { x, y, faceTo };
+		changeScene(TownScene::create());
+	}
+
+	void gotoMountain(int x, int y, Direction faceTo) {
+		playerInfo = { x, y, faceTo };
+		changeScene(MountainScene::create());
+	}
+
+	void gotoWoods(int x, int y, Direction faceTo) {
+		playerInfo = { x, y, faceTo };
+		changeScene(WoodsScene::create());
+	}
+
+	void gotoCave(int x, int y, Direction faceTo) {
+		playerInfo = { x, y, faceTo };
+		changeScene(CaveScene::create());
 	}
 }
 

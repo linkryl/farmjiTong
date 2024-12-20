@@ -24,6 +24,12 @@ Vec2 convertToTileCoord(TMXTiledMap* tmxMap, const Vec2& position);
 // @ ySize  瓦片的尺寸
 std::pair<int, int> convertToTileCoord(const int x, const int y, const int xSize = 16, const int ySize = 16);
 
+// 像素坐标转瓦片坐标
+// 
+// @ x     瓦片x坐标
+// @ y     瓦片y坐标
+Vec2 tileCoordToPixel(int x, int y);
+
 // 判断该位置按该方向是否可移动
 // 
 // @ tmxMap    瓦片地图对象

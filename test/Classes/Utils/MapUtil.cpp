@@ -33,6 +33,14 @@ std::pair<int, int> convertToTileCoord(const int x, const int y, const int xSize
     return std::pair<int, int>(x / xSize, (height - y) / ySize);
 }
 
+// 像素坐标转瓦片坐标
+// 
+// @ x     瓦片x坐标
+// @ y     瓦片y坐标
+Vec2 tileCoordToPixel(int x, int y) {
+    return Vec2(x * 16 + 8, y * 16 - 8);
+}
+
 // 判断该位置按该方向是否可移动
 // 
 // @ tmxMap    瓦片地图对象
@@ -81,6 +89,9 @@ bool canMove(TMXTiledMap* tmxMap, const Vec2 position, Direction direction, bool
 
     // 获取下一步要到达的位置对应的瓦片坐标
     Vec2 tilePos = convertToTileCoord(tmxMap, toPos);
+    if (tilePos.x <= -1 || tilePos.x >= mapSize.width || tilePos.y <= -1 || tilePos.y >= mapSize.height) {
+        return false;
+    }
 
     // 获取地图Buildings层
     auto layer = tmxMap->getLayer("Buildings");
