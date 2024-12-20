@@ -27,6 +27,11 @@ class Time_system
 		time_clock now_clock;//时钟 
 		time_t clock_time;//以秒的方式存储时钟时间，避免存在时间丢失 
 	public:
+		Time_system* Time_system::getInstance()
+		{
+			static Time_system instance;//静态实例化
+			return &instance; 
+		}
 		Time_system();
 		~Time_system(){};
 		void update_time();//更新时间 
@@ -37,12 +42,12 @@ class Time_system
 		bool jump_to_morning();//跳跃到第二天早上的函数，false表示当前时间不能跳跃 
 		void load(time_clock load_time);//设定时间函数 
 };
-Time_system::Time_system()
+inline Time_system::Time_system()
 {
 	start_time=time(0);
 	clock_time=0; 
 }
-void Time_system::update_time()
+inline void Time_system::update_time()
 {
 	time_t now_time=time(0);//获取当前时间 
 	time_t delta_time=now_time-start_time;//计算更新后时间的变化量 
@@ -50,7 +55,7 @@ void Time_system::update_time()
 	update_clock();//更新时钟 
 	start_time=now_time;//将上次调用更新函数后的时间设定为当前时间 
 }
-void Time_system::update_clock()
+inline void Time_system::update_clock()
 {
 	now_clock.day=clock_time/720;//更新天 
 	clock_t hour_sec=(clock_time%720);
@@ -61,7 +66,7 @@ void Time_system::update_clock()
 	}
 	now_clock.weather=now_clock.day%90+1;//更新季节 
 }
-bool Time_system::jump_to_morning()
+inline bool Time_system::jump_to_morning()
 {
 	update_time();//先将队列里边还没更新的时间更新掉 
 	if(now_clock.now_hour>=6&&now_clock.now_hour<18)//6:00-17:59分不能跳到第二天早晨 
@@ -84,19 +89,19 @@ bool Time_system::jump_to_morning()
 	now_clock=load_time; 
 	return true; 
 }
-void Time_system::load(time_clock load_time)
+inline void Time_system::load(time_clock load_time)
 {
 	update_time();//先将队列里边还没更新的时间更新掉 
 	clock_time=load_time.day*720+load_time.now_hour*30+load_time.half_hour*15;
 	//以上表达式中所有的多余的秒均被舍弃 
 	now_clock=load_time; 
 }
-time_clock Time_system::get_time()//返回一个时钟结构体 
+inline time_clock Time_system::get_time()//返回一个时钟结构体 
 {
 	update_time();//更新时间 
 	return now_clock;
 }
-int Time_system::get_clock_time()
+inline int Time_system::get_clock_time()
 {
 	return clock_time;
- } 
+} 
