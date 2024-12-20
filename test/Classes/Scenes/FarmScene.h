@@ -17,6 +17,6 @@ public:
 
     CREATE_FUNC(FarmScene);
 
-    void changeScene(std::string sceneName);
+    void changeScene(TPMap toMap) override;
 
 };

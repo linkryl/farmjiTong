@@ -14,6 +14,7 @@
 #include "../Systems/Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
+#include "InteractableObject.h"
 
 USING_NS_CC;
 
@@ -55,8 +56,9 @@ bool MountainScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    //auto playerPosition = Vec2(playerInfo.tileX * 14 + 8, playerInfo.tileY * 8 - 8);
-    auto playerPosition = Vec2(100, 400);
+    //auto playerPosition = Vec2(playerInfo.tileX * 16 + 8 + 16, playerInfo.tileY * 16 - 8);
+    auto playerPosition = Vec2(10, 440);
+
 
     // 初始化地图
     auto map = TMXTiledMap::create("Mountain.tmx");
@@ -101,6 +103,18 @@ bool MountainScene::init()
 
     getMotionManager()->add_movableObject(this);
 
+    // 绘制按钮的边界框
+    auto drawNode = DrawNode::create();
+    drawNode->drawRect(farmer->getBoundingBox().origin, farmer->getBoundingBox().origin + farmer->getBoundingBox().size, Color4F::RED);
+    Director::getInstance()->getRunningScene()->addChild(drawNode, 100);
+    drawNode->setPosition(playerPosition);
+
+
+    // 建立各传送点
+    auto farmTransportPoint = new TeleportPoint(TPMap::FARM, this);
+    farmTransportPoint->setPosition(tileCoordToPixel(FARM_TO_MOUNTAIN_INIT_X, FARM_TO_MOUNTAIN_INIT_Y));
+    this->addChild(farmTransportPoint);
+    getMotionManager()->add_movableObject(farmTransportPoint);
 
     // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
@@ -118,6 +132,7 @@ bool MountainScene::init()
             player->stand();
             this->stopAllActions();
             this->returnMiddlePosition();
+            CCLOG("%2.f %2.f", PLAYER_POSITION.x, PLAYER_POSITION.y);
         }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
@@ -127,6 +142,15 @@ bool MountainScene::init()
     return true;
 }
 
+void MountainScene::changeScene(TPMap toMap) {
+    if (toMap == TPMap::FARM) {
+        SceneUtil::gotoFarm(MOUNTAIN_TO_FARM_INIT_X, MOUNTAIN_TO_FARM_INIT_Y, UP);
+    }
+    else {
+        CCLOG("Wrong scene name! Please check it.");
+        throw "场景名错误";
+    }
+}
 
 void MountainScene::menuCloseCallback(Ref* pSender)
 {

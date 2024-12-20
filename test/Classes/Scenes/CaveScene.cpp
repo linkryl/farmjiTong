@@ -14,6 +14,7 @@
 #include "../Systems/Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
+#include "InteractableObject.h"
 
 USING_NS_CC;
 
@@ -94,6 +95,12 @@ bool CaveScene::init()
 
     getMotionManager()->add_movableObject(this);
 
+    // 建立各传送点
+    auto farmTransportPoint = new TeleportPoint(TPMap::FARM, this);
+    farmTransportPoint->setPosition(tileCoordToPixel(FARM_TO_CAVE_INIT_X, FARM_TO_CAVE_INIT_Y));
+    this->addChild(farmTransportPoint);
+    getMotionManager()->add_movableObject(farmTransportPoint);
+
     //键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
@@ -117,6 +124,16 @@ bool CaveScene::init()
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
     return true;
+}
+
+void CaveScene::changeScene(TPMap toMap) {
+    if (toMap == TPMap::FARM) {
+        SceneUtil::gotoFarm(CAVE_TO_FARM_INIT_X, CAVE_TO_FARM_INIT_Y, DOWN);
+    }
+    else {
+        CCLOG("Wrong scene name! Please check it.");
+        throw "场景名错误";
+    }
 }
 
 void CaveScene::menuCloseCallback(Ref* pSender)

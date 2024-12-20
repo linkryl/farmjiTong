@@ -2,6 +2,8 @@
 #include "cocos2d.h"
 #include "Player.h"
 #include "MotionManager.h"
+//#include "InteractableObject.h"
+#include "TPMap.h"
 
 USING_NS_CC;
 
@@ -39,4 +41,6 @@ public:
 	Vec2 getCorrectionPosition(Vec2 position);
 
 	void returnMiddlePosition();
+
+	virtual void changeScene(TPMap toMap) = 0;
 };

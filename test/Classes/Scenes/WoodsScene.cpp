@@ -14,6 +14,7 @@
 #include "../Systems/Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
+#include "InteractableObject.h"
 
 
 USING_NS_CC;
@@ -95,6 +96,14 @@ bool WoodsScene::init()
     getMotionManager()->add_movableObject(this);
     //this->go(opposite(playerInfo.faceTo));
 
+
+    // 建立各传送点
+    auto farmTransportPoint = new TeleportPoint(TPMap::FARM, this);
+    farmTransportPoint->setPosition(tileCoordToPixel(FARM_TO_WOODS_INIT_X, FARM_TO_WOODS_INIT_Y));
+    this->addChild(farmTransportPoint);
+    getMotionManager()->add_movableObject(farmTransportPoint);
+
+
     //键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
@@ -112,6 +121,7 @@ bool WoodsScene::init()
             Player* player = farmer;
             player->stand();
             this->stopAllActions();
+            this->returnMiddlePosition();
         }
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
@@ -121,6 +131,15 @@ bool WoodsScene::init()
     return true;
 }
 
+void WoodsScene::changeScene(TPMap toMap) {
+    if (toMap == TPMap::FARM) {
+        SceneUtil::gotoFarm(WOODS_TO_FARM_INIT_X, WOODS_TO_FARM_INIT_Y, LEFT);
+    }
+    else {
+        CCLOG("Wrong scene name! Please check it.");
+        throw "场景名错误";
+    }
+}
 
 void WoodsScene::menuCloseCallback(Ref* pSender)
 {

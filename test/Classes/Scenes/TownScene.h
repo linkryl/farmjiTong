@@ -17,5 +17,5 @@ public:
 
     CREATE_FUNC(TownScene);
 
-    void changeScene(std::string sceneName);
+    void changeScene(TPMap toMap) override;
 };

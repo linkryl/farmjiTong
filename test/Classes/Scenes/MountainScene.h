@@ -17,6 +17,6 @@ public:
 
     CREATE_FUNC(MountainScene);
 
-    void changeScene(std::string sceneName);
+    void changeScene(TPMap toMap) override;
 
 };

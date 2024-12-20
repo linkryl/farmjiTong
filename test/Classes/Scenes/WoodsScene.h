@@ -17,5 +17,5 @@ public:
 
     CREATE_FUNC(WoodsScene);
 
-    void changeScene(std::string sceneName);
+    void changeScene(TPMap toMap) override;
 };

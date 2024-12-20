@@ -6,6 +6,7 @@
 #include "WoodsScene.h"
 #include "CaveScene.h"
 #include "MountainScene.h"
+#include "FarmHouseScene.h"
 #include "Player.h"
 #include "../Utils/MapUtil.h"
 #include "../Utils/SceneUtil.h"
@@ -14,7 +15,8 @@
 #include "../Systems/Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
-#include <memory>
+#include "DialogFrame.h"
+#include "InteractableObject.h"
 
 USING_NS_CC;
 
@@ -157,11 +159,76 @@ bool FarmScene::init()
         this->addChild(part);*/
     abigail->regist(getMotionManager(), this);
 
+    // 建立各传送点
+    auto townTransportPoint = new TeleportPoint(TPMap::TOWN, this);
+    townTransportPoint->setPosition(tileCoordToPixel(TOWN_TO_FARM_INIT_X, TOWN_TO_FARM_INIT_Y));
+    auto caveTransportPoint = new TeleportPoint(TPMap::CAVE, this);
+    caveTransportPoint->setPosition(tileCoordToPixel(CAVE_TO_FARM_INIT_X, CAVE_TO_FARM_INIT_Y));
+    auto woodsTransportPoint = new TeleportPoint(TPMap::WOODS, this);
+    woodsTransportPoint->setPosition(tileCoordToPixel(WOODS_TO_FARM_INIT_X, WOODS_TO_FARM_INIT_Y));
+    auto mountainTransportPoint = new TeleportPoint(TPMap::MOUNTAIN, this);
+    mountainTransportPoint->setPosition(tileCoordToPixel(MOUNTAIN_TO_FARM_INIT_X, MOUNTAIN_TO_FARM_INIT_Y));
+    auto houseTransportPoint = new TeleportPoint(TPMap::FARM_HOUSE, this);
+    houseTransportPoint->setPosition(tileCoordToPixel(HOME_X, HOME_Y));
+    this->addChild(townTransportPoint);
+    this->addChild(caveTransportPoint);
+    this->addChild(woodsTransportPoint);
+    this->addChild(mountainTransportPoint);
+    this->addChild(houseTransportPoint);
+    getMotionManager()->add_movableObject(townTransportPoint);
+    getMotionManager()->add_movableObject(caveTransportPoint);
+    getMotionManager()->add_movableObject(woodsTransportPoint);
+    getMotionManager()->add_movableObject(mountainTransportPoint);
+    getMotionManager()->add_movableObject(houseTransportPoint);
 
     // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         getMotionManager()->keyMap[keyCode] = true;
+        if (keyCode == EventKeyboard::KeyCode::KEY_O) {
+
+            //SceneUtil::gotoFarm();
+            
+
+            // 获取 Director 的 _notificationNode
+            auto notificationNode = Director::getInstance()->getNotificationNode();
+
+            // 如果 _notificationNode 为空，则创建一个新的 Node
+            if (!notificationNode) {
+                notificationNode = Node::create();
+                Director::getInstance()->setNotificationNode(notificationNode);
+            }
+
+            // 创建一个独立的 Layer
+            auto topLayer = Layer::create();
+
+
+            auto dialogFrame = DialogFrame::create("text");
+
+            // 创建一个独立的 Layer 用于放置对话框
+            auto uiLayer = cocos2d::Layer::create();
+            topLayer->addChild(dialogFrame);
+
+            // 将 Layer 添加到 _notificationNode 中
+            notificationNode->addChild(topLayer);
+            
+            /*
+            // 创建一个独立的 Camera 用于 uiLayer
+            auto uiCamera = cocos2d::Camera::create();
+            uiLayer->setCameraMask((unsigned short)cocos2d::CameraFlag::USER1);
+            uiCamera->setCameraFlag(cocos2d::CameraFlag::USER1);
+            uiLayer->setScale(1 / GAME_SCALE);
+            //uiCamera->setScale(1 / GAME_SCALE);
+            //dialogFrame->setPosition(Vec2(-625, -800));
+            // 
+            // 将 uiLayer 添加到场景中
+            this->addChild(uiLayer);
+
+            // 将 Camera 添加到场景中
+            this->addChild(uiCamera);
+            //Director::getInstance()->pushScene(dialogScene);
+            */
+        }
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         getMotionManager()->keyMap[keyCode] = false;
@@ -176,31 +243,43 @@ bool FarmScene::init()
             this->returnMiddlePosition();
         }
     };
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
+    // 处理点击事件
+    auto listener2 = EventListenerTouchOneByOne::create();
+    listener2->onTouchBegan = [](Touch* touch, Event* event) -> bool {
+        // 获取点击的屏幕坐标
+        Vec2 touchLocation = touch->getLocation();
+
+        CCLOG("%2.f %2.f", touchLocation.x, touchLocation.y);
+
+        // 没有点击按钮
+        return false;
+    };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener2, this);
 
     return true;
 }
 
-void FarmScene::changeScene(std::string sceneName) {
-    if (sceneName == "Farm") {
-        SceneUtil::goHome();
+void FarmScene::changeScene(TPMap toMap) {
+    if (toMap == TPMap::FARM) {
+        SceneUtil::gotoFarm();
     }
-    else if (sceneName == "Town") {
-        playerInfo = { FARM_TO_TOWN_INIT_X, FARM_TO_TOWN_INIT_Y, RIGHT };
-        SceneUtil::changeScene(TownScene::create());
+    else if (toMap == TPMap::TOWN) {
+        SceneUtil::gotoTown();
     }
-    else if (sceneName == "Mountain") {
-        playerInfo = { FARM_TO_MOUNTAIN_INIT_X, FARM_TO_MOUNTAIN_INIT_Y, RIGHT };
-        SceneUtil::changeScene(MountainScene::create());
+    else if (toMap == TPMap::MOUNTAIN) {
+        SceneUtil::gotoMountain();
     }
-    else if (sceneName == "Cave") {
-        playerInfo = { FARM_TO_CAVE_INIT_X, FARM_TO_CAVE_INIT_Y, UP };
-        SceneUtil::changeScene(CaveScene::create());
+    else if (toMap == TPMap::CAVE) {
+        SceneUtil::gotoCave();
     }
-    else if (sceneName == "Woods") {
-        playerInfo = { FARM_TO_WOODS_INIT_X, FARM_TO_WOODS_INIT_Y, LEFT };
-        SceneUtil::changeScene(WoodsScene::create());
+    else if (toMap == TPMap::WOODS) {
+        SceneUtil::gotoWoods();
+    }
+    else if (toMap == TPMap::FARM_HOUSE) {
+        SceneUtil::gotoHouse();
     }
     else {
         CCLOG("Wrong scene name! Please check it.");

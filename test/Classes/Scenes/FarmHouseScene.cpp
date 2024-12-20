@@ -15,6 +15,7 @@
 #include "../Systems/Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
+#include "InteractableObject.h"
 
 USING_NS_CC;
 
@@ -60,8 +61,7 @@ bool FarmHouseScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    //auto playerPosition = Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8);
-    auto playerPosition = Vec2(400, 400);
+    auto playerPosition = Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8);
 
     // 初始化地图
     auto map = TMXTiledMap::create("FarmHouse.tmx");
@@ -107,6 +107,11 @@ bool FarmHouseScene::init()
 
     getMotionManager()->add_movableObject(this);
 
+    // 建立各传送点
+    auto farmTransportPoint = new TeleportPoint(TPMap::FARM, this);
+    farmTransportPoint->setPosition(tileCoordToPixel(FARM_TO_HOUSE_INIT_X, FARM_TO_HOUSE_INIT_Y));
+    this->addChild(farmTransportPoint);
+    getMotionManager()->add_movableObject(farmTransportPoint);
 
     // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
@@ -132,26 +137,9 @@ bool FarmHouseScene::init()
     return true;
 }
 
-void FarmHouseScene::changeScene(std::string sceneName) {
-    if (sceneName == "Farm") {
-        playerInfo = { HOME_X, HOME_Y, DOWN };
-        SceneUtil::changeScene(FarmScene::create());
-    }
-    else if (sceneName == "Town") {
-        playerInfo = { FARM_TO_TOWN_INIT_X, FARM_TO_TOWN_INIT_Y, RIGHT };
-        SceneUtil::changeScene(TownScene::create());
-    }
-    else if (sceneName == "Mountain") {
-        playerInfo = { FARM_TO_MOUNTAIN_INIT_X, FARM_TO_MOUNTAIN_INIT_Y, RIGHT };
-        SceneUtil::changeScene(MountainScene::create());
-    }
-    else if (sceneName == "Cave") {
-        playerInfo = { FARM_TO_CAVE_INIT_X, FARM_TO_CAVE_INIT_Y, UP };
-        SceneUtil::changeScene(CaveScene::create());
-    }
-    else if (sceneName == "Woods") {
-        playerInfo = { FARM_TO_WOODS_INIT_X, FARM_TO_WOODS_INIT_Y, LEFT };
-        SceneUtil::changeScene(WoodsScene::create());
+void FarmHouseScene::changeScene(TPMap toMap) {
+    if (toMap == TPMap::FARM) {
+        SceneUtil::gotoFarm();
     }
     else {
         CCLOG("Wrong scene name! Please check it.");
