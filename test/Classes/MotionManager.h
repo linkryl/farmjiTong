@@ -11,9 +11,9 @@ class Movable;
 struct MotionManager
 {
 	// 环境参量
-	enum Character { player, Abigail };
+	enum Character { player, Abigail, TRANSPORT };
 	// 角色对应的ID
-	std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
+	std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114}, {TRANSPORT, 42} };
 	// 玩家位置
 	Vec2 playerPosition;
 	// 按键信息
