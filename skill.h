@@ -22,6 +22,11 @@ class Skill{
 		const double fishing_lucky[6]={0,1.0,1.4,1.4,2.0,2.0};//钓鱼幸运值
 		const int level_exp[6]={-1,0,10,50,150,300};//经验表 
 	public:
+		Skill* Skill::getInstance()
+		{
+			static Skill instance;
+			return &instance;
+		} 
 		Skill();//默认构造函数 
 		Skill(int fa_exp,int co_exp,int fi_exp);//读存档用的构造函数 
 		void update_level();//根据当前经验更新等级 
