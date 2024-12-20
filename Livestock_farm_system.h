@@ -6,6 +6,11 @@ class Liverstock_farm_system//5x5耕地的实现
 		int base_add_x;//左上角土地的左上角x坐标 
 		int base_add_y;//左上角土地的左上角y坐标 
 	public:
+		Liverstock_farm_system* Liverstock_farm_system::getInstance()
+		{
+			static Liverstock_farm_system instance;
+			return &instance;
+		}
 		Liverstock_farm_system();
 		bool update_conditon(int x,int y,int day);//更新指定位置的作物状态函数
 		void update_all();//更新所有的畜栏 
