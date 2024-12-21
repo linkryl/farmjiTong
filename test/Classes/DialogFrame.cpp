@@ -64,7 +64,7 @@ void DialogFrame::initUI(const std::string& content)
     background->addChild(menu);
 
     // 创建头像
-    avatarSprite = Sprite::create("chracters/portraits/Abigail/Abigail_common.png");
+    avatarSprite = Sprite::create("characters/portraits/Abigail/Abigail_common.png");
     if (avatarSprite)
     {
         avatarSprite->setPosition(Vec2(avatarSprite->getContentSize().width / 2 + 100, background->getContentSize().height - avatarSprite->getContentSize().height / 2 + 50));
@@ -112,10 +112,5 @@ void DialogFrame::nextDialog()
     if (currentDialogIndex < dialogList.size())
     {
         updateContent(dialogList[currentDialogIndex]);
-    }
-    else
-    {
-        // 如果已经到达对话列表的末尾，可以关闭对话框或执行其他操作
-        closeDialog();
     }
 }

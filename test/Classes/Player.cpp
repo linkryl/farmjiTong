@@ -1,26 +1,26 @@
 #include "Player.h"
 #include "DialogFrame.h"
-#include "Constant.h"
+#include "StoreScene.h"
 #include <functional>
-#include "Utils/SceneUtil.h"
+#include <random>
+#include <ctime>
 
 void PlayerPart::go(const Direction direction, const Part_catogory catogory, const int id)
 {
+    // 基准速度
+    double base_speed = 80;
     // 一共6帧
     const int upper_limit = 6;
     // 每一帧动画的间隔
     const float frameGap = 0.2;
-    int originDistance = speed * BASE_MOVE_DISTANCE, distance = originDistance;
-
+    int originDistance = speed * base_speed, distance = originDistance;
     for (int i = 1; i <= originDistance; ++i) {
-
         Vec2 pos = modifyVec2(Vec2(getPosition()), direction, i);
-        if (!canMove(getPlayer()->getTiledMap(), pos, direction)) {
+        if (!can_move(getPlayer()->getTiledMap(), pos, direction)) {
             distance = i - 1;
             break;
         }
     }
-
     // 动作
     Vec2 moveVec2 = generateVec2(direction, distance);
     auto moveAction = MoveBy::create(upper_limit * frameGap * distance / originDistance, moveVec2);
@@ -243,17 +243,6 @@ Player* PlayerPart::getPlayer()
 {
     return this->player;
 }
-
-void Player::setTiledMap(TMXTiledMap* map)
-{
-    tmxMap = map;
-}
-
-TMXTiledMap* Player::getTiledMap()
-{
-    return this->tmxMap;
-}
-
 void Player::regist(MotionManager* motionManager, Node* father)
 {
     motionManager->add_movableObject(this);
@@ -299,6 +288,16 @@ void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
         father->addChild(farmer_shadow, Zorder - 6);
 }
 
+void Player::setTiledMap(TMXTiledMap* map)
+{
+    tmxMap = map;
+}
+
+TMXTiledMap* Player::getTiledMap()
+{
+    return this->tmxMap;
+}
+
 void Player::add_part(const std::string& path, const std::string& part_name)
 {
     auto part = PlayerPart::create(path, part_name);
@@ -335,7 +334,6 @@ void Player::add_wearing(const std::string& path, const std::string& wearing_nam
     part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
     wearings.pushBack(part);
 }
-
 void Player::add_shadow(const std::string& path)
 {
     auto part = PlayerPart::create(path, "shadow");
@@ -369,7 +367,7 @@ void Player::heavy_hit()
     }
     // 工具向上砍不好做，干脆不要了
     if (faceTo != UP)
-        tool->heavy_hit(faceTo);
+       tool->heavy_hit(faceTo);
 }
 
 void Player::light_hit()
@@ -393,8 +391,31 @@ void Player::fishing()
             if (part->part_name == "arm")
             {
                 part->setTexture("motion/fishing_" + numToString[faceTo] + "/arm_fishing_" + numToString[faceTo] + ".png");
+                break;
             }
         }
+    }
+    //3120是海草
+    //3121是鲤鱼
+    //3122是鲟鱼
+    //3123是鲶鱼
+    //3124是大海参
+    //3125是河豚
+    //3126是传说之鱼
+    // 掉落概率
+    srand(time(0));
+    std::map<int, float> probabilities = { {3120, 0.5}, {3121,0.4}, {3122,0.15}, {3123,0.15}, {3124,0.05}, {3125,0.05}, {3126,0.001} };
+    for (int i = 3120; i <= 3126; i++)
+    {
+        float probability = probabilities[i];
+        while (probability >= 1)
+        {
+            probability -= 1;
+            bag->addItem(i, 1);
+        }
+        int a = rand() % (int)(1 / probability);
+        if (a == 0)
+            bag->addItem(i, 1);
     }
 }
 
@@ -502,12 +523,13 @@ void Player::moveUpdate(MotionManager* information)
         move = true;
         direction = UP;
     }
-
     auto pos = this->get_parts().at(0)->getPosition();
-
+    if (this) {
+        CCLOG("Position %f %f", pos.x, pos.y);
+    }
     if (move)
     {
-        if (!canMove(this->getTiledMap(), pos, direction)) return;
+        if (!can_move(this->getTiledMap(), pos, direction)) return;
         this->go(direction);
     }
 
@@ -522,7 +544,14 @@ void Player::moveUpdate(MotionManager* information)
     }
     // 钓鱼
     else if (information->keyMap[fishing] && !move)
-        this->fishing();
+    {
+        auto currentTime = std::chrono::steady_clock::now();
+        if (currentTime - lastFishingTime >= std::chrono::seconds(1))
+        {
+            this->fishing();
+            lastFishingTime = currentTime;
+        }
+    }
     // 浇水
     else if (information->keyMap[watering] && !move)
         this->watering();
@@ -533,7 +562,7 @@ void Player::moveUpdate(MotionManager* information)
     // 更新位置
     information->playerPosition = currentPosition;
     // 更新血量
-    //health += information->deltaPlayerHealth;
+    health += information->deltaPlayerHealth;
 }
 
 Vector<PlayerPart*> Player::get_parts()
@@ -558,10 +587,15 @@ PlayerPart* Player::get_shadow()
 {
     return shadow;
 }
-
+Player* Player::getInstance()
+{
+    static Player* player = create();
+    return player;
+}
 Player* Player::create()
 {
     Player* player = new Player();
+    player->bag = Bag::getInstance();
     if (player)
     {
         player->autorelease();
@@ -610,10 +644,10 @@ void NPC::communicate(const std::string& text, const std::string& emotion)
         communicating = false;
         });
     // 设置对话框头像
-    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_" + emotion + ".png");
+    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_"+ emotion +".png");
 }
 
-void NPC::moveUpdate(MotionManager* information)
+void NPC::moveUpdate(MotionManager * information)
 {
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
     auto gift = cocos2d::EventKeyboard::KeyCode::KEY_G;
@@ -626,7 +660,6 @@ void NPC::moveUpdate(MotionManager* information)
         if (dis < dis_limit)
         {
             this->communicate();
-            SceneUtil::goHome();
         }
     }
     else if (information->keyMap[gift])
@@ -637,7 +670,12 @@ void NPC::moveUpdate(MotionManager* information)
             abs(information->playerPosition.y - this->getPosition().y);
         if (dis < dis_limit)
         {
-            this->receive_gift();
+            auto currentTime = std::chrono::steady_clock::now();
+            if (currentTime - lastGiftTime >= std::chrono::seconds(1))
+            {
+                this->receive_gift();
+                lastGiftTime = currentTime;
+            }
         }
     }
 }
@@ -645,4 +683,28 @@ void NPC::moveUpdate(MotionManager* information)
 void NPC::receive_gift()
 {
     communicate("Thank you, I just love it!", "smile");
+    auto socialInfo = SocialInfo::getInstance();
+    socialInfo->increase_favorability("Abigail");
+}
+
+void Pierre::communicate()
+{
+    Director::getInstance()->pushScene(StoreScene::createScene());
+}
+
+void Pierre::moveUpdate(MotionManager* information)
+{
+    auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
+    if (information->keyMap[communicate])
+    {
+        information->keyMap[communicate] = false;
+        // 距离多少能交互？
+        const int dis_limit = 30;
+        float dis = abs(information->playerPosition.x - this->getPosition().x) +
+            abs(information->playerPosition.y - this->getPosition().y);
+        if (dis < dis_limit)
+        {
+            this->communicate();
+        }
+    }
 }

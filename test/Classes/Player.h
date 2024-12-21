@@ -1,10 +1,12 @@
 ﻿#pragma once
 #include "cocos2d.h"
 #include "PlayerData.h"
-#include "Utils/MapUtil.h"
+#include "Util.h"
+#include "MotionManager.h"  // 包含 MotionManager.h
 #include <map>
 #include <string>
-#include "MotionManager.h"
+#include "Item.h"
+#include "SocialInfo.h"
 using namespace cocos2d;
 
 // 用于遍历Player的各个身体部分的宏
@@ -14,7 +16,7 @@ using namespace cocos2d;
 #define WEARING_TRAVELSAL(wearing) for (const auto wearing : wearings)
 
 class Player;
-
+enum Part_catogory { HUMAN, TOOL, WEAPON, WEARING, SHADOW };
 
 class PlayerPart : public Sprite
 {
@@ -32,11 +34,11 @@ protected:
     Part_catogory part_catogory;
     // 名称映射到类别
     std::map<std::string, Part_catogory> nameToCatogory = { {"body", HUMAN}, {"arm", HUMAN}, {"axe", TOOL},
-        {"pickaxe", TOOL}, {"hoe", TOOL}, { "sword", WEAPON }, {"sickle", WEAPON}, {"hat", WEARING}, {"shadow", SHADOW} };
+        {"pickaxe", TOOL}, {"hoe", TOOL}, { "sword", WEAPON }, {"sickle", WEAPON}, {"hat", WEARING}, {"shadow", SHADOW}};
     std::map<Motion, int> hashValue = { {GO, 147}, {LIGHT_HIT, 458}, {HEAVY_HIT, 749}, {STAND, 8674} };
     std::map<std::string, int> partNameHash = { {"body", 4556498}, {"arm", 843458}, {"axe", 43545364},
-        {"pickaxe", 56431512}, {"hoe", 54444545}, {"sword", 9522665}, {"sickle", 984213056}, {"hat", 896185},
-        {"hairstyle", 943690}, {"shirt", 438135}, {"pants", 940650}, {"shadow", 894541} };
+        {"pickaxe", 56431512}, {"hoe", 54444545}, {"sword", 9522665}, {"sickle", 984213056}, {"hat", 896185}, 
+        {"hairstyle", 943690}, {"shirt", 438135}, {"pants", 940650}, {"shadow", 894541}};
 public:
     PlayerPart() : luck(0.0f), speed(1) {}
     PlayerPart(const std::string& part_name, const int width_ = 16, const int height_ = 32) : luck(0.0f), speed(1), part_name(part_name), width(width_), height(height_)
@@ -60,6 +62,8 @@ public:
 class Player : public Node, public Movable
 {
 protected:
+    // 在Player类中添加一个成员变量来记录上一次钓鱼的时间
+    std::chrono::time_point<std::chrono::steady_clock> lastFishingTime;
     // 给对应的衣服一个编号
     // 角色的身体各个部分
     Vector<PlayerPart*> parts;
@@ -76,6 +80,8 @@ protected:
     Direction faceTo;
     // 所在地图
     TMXTiledMap* tmxMap;
+private:
+    Bag* bag;
 public:
     // 血量
     int health;
@@ -87,23 +93,19 @@ public:
     int speed;
     // 攻击力
     int attack = 10;
+
     // 玩家的帽子，衣服，裤子的id
     std::map<std::string, int> wearingId;
     Player(TMXTiledMap* map = nullptr) : luck(0), speed(1), faceTo(DOWN) {
         tmxMap = map;
     }
 
+    static Player* getInstance();
     void regist(MotionManager* motionManager, Node* father);
     void regist(MotionManager* motionManager, Node* father, int Zorder);
     virtual void moveUpdate(MotionManager* information);
     void setTiledMap(TMXTiledMap* map);
     TMXTiledMap* getTiledMap();
-    void setSpeed(int speed) {
-        this->speed = speed;
-    }
-    int getSpeed() {
-        return this->speed;
-    }
     void add_wearing(const std::string& path, const std::string& part_name, const int id);
     void add_part(const std::string& path, const std::string& part_name);
     void add_tool(const std::string& path, const std::string& tool_name);
@@ -131,6 +133,8 @@ class NPC : public Player
 private:
     // 对话的内容
     std::vector<std::string> dialogs;
+    // 在NPC类中添加一个成员变量来记录上一次送礼的时间
+    std::chrono::time_point<std::chrono::steady_clock> lastGiftTime;
     // 正在对话
     bool communicating;
 public:
@@ -138,7 +142,22 @@ public:
     //virtual void stand();
     void communicate();
     void add_dialogs(const std::vector<std::string>& dialogs);
-    void moveUpdate(MotionManager* information);
-    void communicate(const std::string& text, const std::string& emotion);
+    virtual void moveUpdate(MotionManager* information);
+    virtual void communicate(const std::string& text, const std::string& emotion);
     void receive_gift();
+};
+
+
+class Pierre : public NPC
+{
+private:
+    // 对话的内容
+    std::vector<std::string> dialogs;
+    // 正在对话
+    bool communicating;
+public:
+    //virtual void go(Direction direction);
+    //virtual void stand();
+    void communicate();
+    virtual void moveUpdate(MotionManager* information);
 };
