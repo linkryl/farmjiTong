@@ -7,27 +7,13 @@
 
 USING_NS_CC;
 
-class CoopScene : public cocos2d::Scene
+class CoopScene : public Scene
 {
 public:
   static Scene* createScene();
 
   virtual bool init();
 
-  static CoopScene* create()
-  {
-      CoopScene* ret = new (std::nothrow) CoopScene();
-      if (ret && ret->init())
-      {
-          ret->autorelease();
-          return ret;
-      }
-      else
-      {
-          delete ret;
-          ret = nullptr;
-          return nullptr;
-      }
-  }
+  CREATE_FUNC(CoopScene);
 };
 #endif
