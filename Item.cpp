@@ -1,6 +1,6 @@
-#include "Item.h"
+﻿#include "Item.h"
 
-// ��ʼ����̬��Ա
+// ³õÊ¼»¯¾²Ì¬³ÉÔ±
 Bag* Bag::_instance = nullptr;
 
 Bag* Bag::getInstance()
@@ -14,12 +14,8 @@ Bag* Bag::getInstance()
 
 Bag::Bag()
 {
-  addItem(3110, 1);
-  addItem(3111, 1);
-  addItem(3112, 1);
-  addItem(3113, 1);
-  addItem(3114, 1);
-  addItem(3115, 1);
+  addItem(3101, 2);
+  money = 1000;
   if (!_items.empty())
   {
     auto it = _items.begin();

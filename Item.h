@@ -26,7 +26,8 @@ public:
   std::map<int, int> _items; // 使用物品ID作为键，数量作为值
 
   int itemInHand;
-  
+
+  int money;
   //替换手中道具
   void changeHand(int itemId, int quantity);
 private:
