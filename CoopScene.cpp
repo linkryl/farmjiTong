@@ -1,4 +1,4 @@
-#include "CoopScene.h"
+ï»¿#include "CoopScene.h"
 #include "proj.win32/AudioPlayer.h"
 #include "proj.win32/HoverButton.h"
 #include "ui/CocosGUI.h"
@@ -13,23 +13,23 @@ Scene* CoopScene::createScene()
 
 bool CoopScene::init()
 {
-  // ´´½¨³¡¾°
+  // åˆ›å»ºåœºæ™¯
   if (!Scene::init())
   {
     return false;
   }
 
-  //²âÊÔ
-  SocialInfo npcs;
-  npcs.add_NPC("Abigail");
-  npcs.add_NPC("Alex");
-  npcs.increase_favorability("Abigail");
-  std::vector<std::string> ::iterator j = npcs.NPC_names.begin();
-  auto l = npcs.favorabilities.begin();
-  for (size_t i = 0; i < npcs.favorabilities.size(); ++i,++j ,++l)
+  //æµ‹è¯•
+  SocialInfo* npcs = SocialInfo::getInstance();
+  npcs->add_NPC("Abigail");
+  npcs->add_NPC("Alex");
+  npcs->increase_favorability("Abigail");
+  std::vector<std::string> ::iterator j = npcs->NPC_names.begin();
+  auto l = npcs->favorabilities.begin();
+  for (size_t i = 0; i < npcs->favorabilities.size(); ++i,++j ,++l)
   {
-    // ¼ÓÔØÈËÎïÍ¼Æ¬"../Resources/" + std::to_string(itemId) + ".png"
-    const auto npcpng = Sprite::create("../Resources/" + *j + ".png"); // Î´È·¶¨
+    // åŠ è½½äººç‰©å›¾ç‰‡"../Resources/" + std::to_string(itemId) + ".png"
+    const auto npcpng = Sprite::create("../Resources/" + *j + ".png"); // æœªç¡®å®š
     npcpng->setContentSize(Size(100, 100));
     npcpng->setPosition(Vec2(80,650-100*i));
     this->addChild(npcpng, 3);
@@ -43,14 +43,14 @@ bool CoopScene::init()
     {
       if (h<l->second)
       {
-        const auto level = Sprite::create("../Resources/CoopLevel.png"); // Î´È·¶¨
+        const auto level = Sprite::create("../Resources/CoopLevel.png"); // æœªç¡®å®š
         level->setContentSize(Size(40, 40));
         level->setPosition(Vec2(250 + h * 40, 650 - 100 * i));
         this->addChild(level, 3);
       }
       else
       {
-        const auto delevel = Sprite::create("../Resources/DecoopLevel.png"); // Î´È·¶¨
+        const auto delevel = Sprite::create("../Resources/DecoopLevel.png"); // æœªç¡®å®š
         delevel->setContentSize(Size(40, 40));
         delevel->setPosition(Vec2(250 + h * 40, 650 - 100 * i));
         this->addChild(delevel, 3);
@@ -58,29 +58,29 @@ bool CoopScene::init()
     }
 
   }
-  // ¼ÓÔØ±³¾°
+  // åŠ è½½èƒŒæ™¯
   const auto screenSize = Director::getInstance()->getVisibleSize();
-  const auto background = Sprite::create("../Resources/emptyscene.png");//Î´È·¶¨
+  const auto background = Sprite::create("../Resources/emptyscene.png");//æœªç¡®å®š
   background->setContentSize(screenSize);
   background->setPosition(Vec2(screenSize.width / 2, screenSize.height / 2));
   this->addChild(background, 2);
 
-  // ´´½¨·µ»ØÓÎÏ·°´Å¥
+  // åˆ›å»ºè¿”å›žæ¸¸æˆæŒ‰é’®
   auto backButton = HoverButton::create("../Resources/BackDefaultButton.png",
     "../Resources/BackPressedButton.png",
     "../Resources/BackDefaultButton.png");
 
   backButton->setScale(0.46f);
 
-  // ÉèÖÃ·µ»Ø°´Å¥Î»ÖÃ
+  // è®¾ç½®è¿”å›žæŒ‰é’®ä½ç½®
   backButton->setPosition(Vec2(screenSize.width / 2 + 565, screenSize.height / 2 - 327));
 
-  // Îª·µ»Ø°´Å¥Ìí¼ÓÊÂ¼þ´¦ÀíÆ÷
+  // ä¸ºè¿”å›žæŒ‰é’®æ·»åŠ äº‹ä»¶å¤„ç†å™¨
   backButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type)
     {
       if (type == ui::Widget::TouchEventType::ENDED)
       {
-        // ¼ÓÔØµã»÷ÒôÐ§
+        // åŠ è½½ç‚¹å‡»éŸ³æ•ˆ
         audioPlayer("../Resources/Music/ClickSoundEffect.mp3", false);
 
         Director::getInstance()->popScene();
@@ -88,7 +88,7 @@ bool CoopScene::init()
       }
     });
 
-  // ½«·µ»Ø°´Å¥Ìí¼Óµ½³¡¾°ÖÐ
+  // å°†è¿”å›žæŒ‰é’®æ·»åŠ åˆ°åœºæ™¯ä¸­
   this->addChild(backButton,3);
   
   return true;

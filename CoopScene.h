@@ -14,6 +14,20 @@ public:
 
   virtual bool init();
 
-  CREATE_FUNC(CoopScene);
+  static CoopScene* create()
+  {
+      CoopScene* ret = new (std::nothrow) CoopScene();
+      if (ret && ret->init())
+      {
+          ret->autorelease();
+          return ret;
+      }
+      else
+      {
+          delete ret;
+          ret = nullptr;
+          return nullptr;
+      }
+  }
 };
 #endif
