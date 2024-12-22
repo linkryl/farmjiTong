@@ -7,6 +7,7 @@
 #include "CaveScene.h"
 #include "MountainScene.h"
 #include "FarmHouseScene.h"
+#include "BackpackManager.h"
 #include "Player.h"
 #include "../Utils/MapUtil.h"
 #include "../Utils/SceneUtil.h"
@@ -28,8 +29,6 @@ enum Character { player, Abigail };
 // 1111为谷物作物，1101为谷物种子，1121为收获的谷物 
 // 2110为猪，2100为猪仔，2120为猪肉 
 
-extern Farm_system farm_system;
-extern Liverstock_farm_system live_farm_system;
 extern Time_system time_system;
 extern std::map<int, std::string> crop_names;
 extern std::map<int, int> crop_image_number;
@@ -84,45 +83,21 @@ bool FarmScene::init()
     this->setScale(GAME_SCALE);
 
     // 初始化农田
-    for (int i = 0; i < 5; ++i) {
-        for (int j = 4; j >= 0; --j) {
-            auto info = farm_system.get_info(16 * (FARM_OFFSET_X + i), 16 * (FARM_OFFSET_Y + j));
-            if (info.type == 0) {
-                //continue;
-            }
-            // 编号应该按照作物生长状态动态调取，先演示
-            //auto crop = Sprite::create("/crops/" + crop_names[info.type] + "_6");
-
-            auto crop = Sprite::create("/Crops/" + crop_names[1110 + rand() % 2] + "_" + std::to_string(rand() % 6 + 1) + ".png");
-            crop->setPosition(16 * (FARM_OFFSET_X + i), 16 * (FARM_OFFSET_Y + j));
-            crop->setAnchorPoint(Vec2(0, 0));
-            //crop->setScale(GAME_SCALE);
-            addChild(crop);
-        }
+    if (1) {
+        CCLOG("Farm scene init!");
+        Farm_system::getInstance()->drawFarm();
     }
 
     // 初始化畜栏
-    if (0) {
-        for (int i = 0; i < 5; ++i) {
-            auto info = live_farm_system.get_info(16 * (LIVE_FARM_OFFSET_X + i), 16 * LIVE_FARM_OFFSET_Y);
-            if (info.type == 0) {
-                //continue;
-            }
-            // 编号应该按照作物生长状态动态调取，先演示
-            //auto crop = Sprite::create("/crops/" + crop_names[info.type] + "_6");
-
-            auto crop = Sprite::create("/Animals/" + crop_names[2110] + "_1.png");
-            crop->setPosition((16 * (LIVE_FARM_OFFSET_X + i * 3) - 8), (16 * LIVE_FARM_OFFSET_Y + 8));
-            crop->setAnchorPoint(Vec2(0, 0));
-            addChild(crop);
-        }
+    if (1) {
+        Liverstock_farm_system::getInstance()->drawFarm();
     }
 
     // 初始化人物
     auto farmer = Player::create();
     
     farmer->setTiledMap(map);
-    farmer->setAnchorPoint(Vec2(0, 0));
+    farmer->setAnchorPoint(Vec2(0.5, 0));
     farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
     farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
     farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
@@ -133,7 +108,7 @@ bool FarmScene::init()
 
     farmer->setPosition(playerPosition);
 
-    farmer->regist(getMotionManager(), this, 2);
+    farmer->regist(getMotionManager(), this, 20);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
@@ -181,53 +156,41 @@ bool FarmScene::init()
     getMotionManager()->add_movableObject(mountainTransportPoint);
     getMotionManager()->add_movableObject(houseTransportPoint);
 
+    
     // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         getMotionManager()->keyMap[keyCode] = true;
         if (keyCode == EventKeyboard::KeyCode::KEY_O) {
-
-            //SceneUtil::gotoFarm();
+            //crop->setColor(Color3B::RED);
             
+            Bag::getInstance()->itemInHand = FOOD;
+            
+            int x = PLAYER_POSITION.x;
+            int y = PLAYER_POSITION.y;
+            int idx, idy;
+            Farm_system::getInstance()->get_closest_land(x, y, idx, idy);
+            CCLOG("farm %d %d", idx, idy);
+            Liverstock_farm_system::getInstance()->get_closest_corral(x, y, idx);
+            CCLOG("animal %d", idx);
 
-            // 获取 Director 的 _notificationNode
-            auto notificationNode = Director::getInstance()->getNotificationNode();
+            Farm_system::getInstance()->plant_seed(WHEAT_SEED, x, y);
 
-            // 如果 _notificationNode 为空，则创建一个新的 Node
-            if (!notificationNode) {
-                notificationNode = Node::create();
-                Director::getInstance()->setNotificationNode(notificationNode);
+            for (int i = 0; i < 5; ++i) {
+                int cnt[5] = { 0 };
+                for (int j = 0; j < 5; ++j) {
+                    auto info = Farm_system::getInstance()->farm_land[i][j].get_info();
+                    cnt[j] = info.type != 0;
+                }
+                CCLOG("%d %d %d %d %d", cnt[0], cnt[1], cnt[2], cnt[3], cnt[4]);
             }
 
-            // 创建一个独立的 Layer
-            auto topLayer = Layer::create();
+            Farm_system::getInstance()->drawFarm();
 
+            Liverstock_farm_system::getInstance()->plant_seed(PIG_SEED, x, y);
 
-            auto dialogFrame = DialogFrame::create("text");
+            Liverstock_farm_system::getInstance()->drawFarm();
 
-            // 创建一个独立的 Layer 用于放置对话框
-            auto uiLayer = cocos2d::Layer::create();
-            topLayer->addChild(dialogFrame);
-
-            // 将 Layer 添加到 _notificationNode 中
-            notificationNode->addChild(topLayer);
-            
-            /*
-            // 创建一个独立的 Camera 用于 uiLayer
-            auto uiCamera = cocos2d::Camera::create();
-            uiLayer->setCameraMask((unsigned short)cocos2d::CameraFlag::USER1);
-            uiCamera->setCameraFlag(cocos2d::CameraFlag::USER1);
-            uiLayer->setScale(1 / GAME_SCALE);
-            //uiCamera->setScale(1 / GAME_SCALE);
-            //dialogFrame->setPosition(Vec2(-625, -800));
-            // 
-            // 将 uiLayer 添加到场景中
-            this->addChild(uiLayer);
-
-            // 将 Camera 添加到场景中
-            this->addChild(uiCamera);
-            //Director::getInstance()->pushScene(dialogScene);
-            */
         }
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {

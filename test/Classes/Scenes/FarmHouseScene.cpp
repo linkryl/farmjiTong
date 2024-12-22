@@ -7,6 +7,7 @@
 #include "WoodsScene.h"
 #include "CaveScene.h"
 #include "MountainScene.h"
+#include "DealScene.h"
 #include "Player.h"
 #include "../Utils/MapUtil.h"
 #include "../Utils/SceneUtil.h"
@@ -113,6 +114,11 @@ bool FarmHouseScene::init()
     this->addChild(farmTransportPoint);
     getMotionManager()->add_movableObject(farmTransportPoint);
 
+    auto dealTransportPoint = new TeleportPoint(TPMap::DEAL, this);
+    dealTransportPoint->setPosition(tileCoordToPixel(HOUSE_TO_DEAL_INIT_X, HOUSE_TO_DEAL_INIT_Y));
+    this->addChild(dealTransportPoint);
+    getMotionManager()->add_movableObject(dealTransportPoint);
+
     // ¼üÅÌÊÂ¼þ¼àÌýÆ÷
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
@@ -140,6 +146,9 @@ bool FarmHouseScene::init()
 void FarmHouseScene::changeScene(TPMap toMap) {
     if (toMap == TPMap::FARM) {
         SceneUtil::gotoFarm();
+    }
+    else if (toMap == TPMap::DEAL) {
+        Director::getInstance()->pushScene(DealScene::create());
     }
     else {
         CCLOG("Wrong scene name! Please check it.");
