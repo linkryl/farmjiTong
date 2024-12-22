@@ -8,16 +8,8 @@
 | 罗力 (组长) | 2353250 | **整体项目及人物运动工作统筹** <br> 完善所有的人物动画 <br> 代码审查 <br> 项目框架搭建 <br> 实现对话框类 <br> 社交系统 <br> 战斗系统 <br> 金融系统 <br> 人物阴影 <br> 提供资源文件|
 | 潘越 | 2353788 | **项目测试及场景工作统筹** <br> 实现碰撞检测 <br> 优化移动逻辑 <br> 实现视角移动 <br> 上传瓦片地图文件及材质 <br> 配套更新地图工具类函数 <br> 添加回家接口，优化切换场景接口内部实现逻辑 <br> 派生可互动对象类及传送点类 <br> 图像元素绘制 <br> 实现地图之间传送|
 | 齐震罡 | 2457054 | **项目后端统筹** <br> `Corral_system` 类 <br> `Farm_system` 类 <br> `Land_system` 类 <br> `Livestock_farm_system` 类 <br> `Time_system` 类 <br> `basic_plant_and_animal_class` 类 <br> `map_system` 类 | 
-| 毛韩宇 | 2353731 | **项目前端工作统筹** <br> `AudioPlayer` 类 <br> `BackpackLayer` 类 <br> `BackpackManager` 类 <br> `BagScene` 类 <br> `CoopScene` 类 <br> `EntrustScene` 类 <br> `HoverButton` 类 <br> 部分素材绘制 <br> `InitialScene` 类 <br> `Item` 类 <br> `MenuScene` 类 <br> `SettingsScene` 类 <br> `SkillScene` 类 <br> `StartupScene` 类 <br> 项目答辩 PPT 制作 |
+| 毛韩宇 | 2353731 | **项目前端工作统筹** <br> `AudioPlayer` 类 <br> `BackpackLayer` 类 <br> `BackpackManager` 类 <br> `BagScene` 类 <br> `CoopScene` 类 <br> `EntrustScene` 类 <br> `HoverButton` 类 <br> 部分素材绘制 <br> `InitialScene` 类 <br> `Item` 类 <br> `MenuScene` 类 <br> `SettingsScene` 类 <br> `SkillScene` 类 <br> `StartupScene` 类 |
 
-## 成员贡献
-
-| 姓名 | 学号 | 代码行数 | 工作量 |
-| :---: | :---: | :---: | :---: |
-| 罗力 (组长) | 2353250 | ** | *% |
-| 潘越 | 2353788 | ** | *% |
-| 齐震罡 | 2457054 | ** | *% |
-| 毛韩宇 | 2353731 | ** | *% |
 
 ## 项目组成
 
