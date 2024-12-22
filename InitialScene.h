@@ -3,6 +3,7 @@
 #define _INITIAL_SCENE_H_
 
 #include "cocos2d.h"
+#include "Time_system.h"
 
 USING_NS_CC;
 
@@ -18,15 +19,26 @@ public:
   // 初始化场景
   virtual bool init();
 
+  void updateLabel(float dt)
+  {
+    time_clock currentTime = _timeSystem->get_time();
+    std::string timeString = StringUtils::format(
+      "Day: %d, Hour: %02d:%02d, Weather: %d",
+      currentTime.day,
+      currentTime.now_hour,
+      currentTime.half_hour ? 30 : 0,
+      currentTime.weather
+    );
+    _label->setString(timeString);
+  }
+
   // 实现 InitialScene 类的 create 方法
   CREATE_FUNC(InitialScene);
 
 private:
-  // 检查字符合法性
-  bool isValidCharacter(const char32_t ch);
-
-  // 检查字符串合法性
-  bool isValidString(const std::string& str);
+  Label* _label;
+  Sprite* _item;
+  Time_system* _timeSystem = Time_system::getInstance();
 };
 
 #endif // !_INITIAL_SCENE_H_#pragma once

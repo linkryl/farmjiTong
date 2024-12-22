@@ -36,14 +36,44 @@ bool InitialScene::init()
   background->setPosition(Vec2(screenSize.width / 2, screenSize.height / 2));
   this->addChild(background);
 
-  _label = Label::createWithTTF("Day: 0, Hour: 0, Weather: 1", "fonts/Marker Felt.ttf", 24);
-  _label->setPosition(Vec2(screenSize.width / 2 + 481, screenSize.height / 2 + 315));
-  _label->setColor(Color3B::BLACK);
-  this->addChild(_label, 10);
+  auto listener = EventListenerKeyboard::create();
 
-  _timeSystem = new Time_system();
+  listener->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event)
+    {
+      if (keyCode == EventKeyboard::KeyCode::KEY_P)
+      {
+        // 如果标签不存在，则创建并显示它
+        if (!_label)
+        {
+          _label = Label::createWithTTF("Day: 0, Hour: 0, Weather: 1", "fonts/Marker Felt.ttf", 24);
+          _label->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2 + 481,
+            Director::getInstance()->getVisibleSize().height / 2 + 315));
+          _label->setColor(Color3B::BLACK);
+          this->addChild(_label, 10);
 
-  schedule(CC_SCHEDULE_SELECTOR(InitialScene::updateLabel), 1.0f);
+          // 初始化时间系统并安排更新标签
+          _timeSystem = Time_system::getInstance();
+          this->schedule(schedule_selector(InitialScene::updateLabel), 1.0f);
+
+          _item = Sprite::create("../Resources/Item/" + std::to_string(Bag::getInstance()->itemInHand) + ".png");
+          _item->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2 + 481,
+            Director::getInstance()->getVisibleSize().height / 2 + 285));
+          this->addChild(_item);
+        }
+      }
+      else if (keyCode == EventKeyboard::KeyCode::KEY_K)
+      {
+        // 如果标签存在，则移除它
+        if (_label)
+        {
+          this->unschedule(schedule_selector(InitialScene::updateLabel));
+          this->removeChild(_label, true);
+          this->removeChild(_item, true);
+          _label = nullptr;
+        }
+      }
+    };
+  this->_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
   // 创建返回游戏按钮
   auto backButton = HoverButton::create("../Resources/BackDefaultButton.png",
