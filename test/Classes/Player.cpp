@@ -1,26 +1,31 @@
 #include "Player.h"
 #include "DialogFrame.h"
-#include "StoreScene.h"
+#include "Constant.h"
 #include <functional>
-#include <random>
-#include <ctime>
+#include "Utils/SceneUtil.h"
+#include "SocialInfo.h"
+#include "Item.h"
+#include "Systems/Farm_system.h"
+#include "Systems/Livestock_farm_system.h"
+#include "AudioPlayer.h"
 
 void PlayerPart::go(const Direction direction, const Part_catogory catogory, const int id)
 {
-    // 基准速度
-    double base_speed = 80;
     // 一共6帧
     const int upper_limit = 6;
     // 每一帧动画的间隔
     const float frameGap = 0.2;
-    int originDistance = speed * base_speed, distance = originDistance;
+    int originDistance = speed * BASE_MOVE_DISTANCE, distance = originDistance;
+
     for (int i = 1; i <= originDistance; ++i) {
+
         Vec2 pos = modifyVec2(Vec2(getPosition()), direction, i);
-        if (!can_move(getPlayer()->getTiledMap(), pos, direction)) {
+        if (!canMove(getPlayer()->getTiledMap(), pos, direction)) {
             distance = i - 1;
             break;
         }
     }
+
     // 动作
     Vec2 moveVec2 = generateVec2(direction, distance);
     auto moveAction = MoveBy::create(upper_limit * frameGap * distance / originDistance, moveVec2);
@@ -243,6 +248,17 @@ Player* PlayerPart::getPlayer()
 {
     return this->player;
 }
+
+void Player::setTiledMap(TMXTiledMap* map)
+{
+    tmxMap = map;
+}
+
+TMXTiledMap* Player::getTiledMap()
+{
+    return this->tmxMap;
+}
+
 void Player::regist(MotionManager* motionManager, Node* father)
 {
     motionManager->add_movableObject(this);
@@ -288,16 +304,6 @@ void Player::regist(MotionManager* motionManager, Node* father, int Zorder)
         father->addChild(farmer_shadow, Zorder - 6);
 }
 
-void Player::setTiledMap(TMXTiledMap* map)
-{
-    tmxMap = map;
-}
-
-TMXTiledMap* Player::getTiledMap()
-{
-    return this->tmxMap;
-}
-
 void Player::add_part(const std::string& path, const std::string& part_name)
 {
     auto part = PlayerPart::create(path, part_name);
@@ -334,6 +340,7 @@ void Player::add_wearing(const std::string& path, const std::string& wearing_nam
     part->setAnchorPoint(Vec2(0.5, 1.0 / 3));
     wearings.pushBack(part);
 }
+
 void Player::add_shadow(const std::string& path)
 {
     auto part = PlayerPart::create(path, "shadow");
@@ -367,7 +374,7 @@ void Player::heavy_hit()
     }
     // 工具向上砍不好做，干脆不要了
     if (faceTo != UP)
-       tool->heavy_hit(faceTo);
+        tool->heavy_hit(faceTo);
 }
 
 void Player::light_hit()
@@ -523,13 +530,12 @@ void Player::moveUpdate(MotionManager* information)
         move = true;
         direction = UP;
     }
+
     auto pos = this->get_parts().at(0)->getPosition();
-    if (this) {
-        CCLOG("Position %f %f", pos.x, pos.y);
-    }
+
     if (move)
     {
-        if (!can_move(this->getTiledMap(), pos, direction)) return;
+        if (!canMove(this->getTiledMap(), pos, direction)) return;
         this->go(direction);
     }
 
@@ -553,8 +559,47 @@ void Player::moveUpdate(MotionManager* information)
         }
     }
     // 浇水
-    else if (information->keyMap[watering] && !move)
+    else if (information->keyMap[watering] && !move) {
+        information->keyMap[watering] = false;
         this->watering();
+        audioPlayer("../Resources/Music/water.ogg", false);
+        Farm_system::getInstance()->add_water(100, pos.x, pos.y);
+        Liverstock_farm_system::getInstance()->add_water(100, pos.x, pos.y);
+    }
+        
+
+    if (information->keyMap[communicate] && !move) {
+        // 获取手中物品
+        auto bag = Bag::getInstance();
+        auto itemInHand = bag->itemInHand;
+
+        // 农牧场交互
+        if (itemInHand == PARSNIP_SEED || itemInHand == WHEAT_SEED) {
+            int pixelX = pos.x, pixelY = pos.y;
+            bool ok = Farm_system::getInstance()->plant_seed(itemInHand, pixelX, pixelY);
+            if (ok) {
+                bag->removeItem(itemInHand, 1);
+            }
+        }
+        else if (itemInHand == PIG_SEED) {
+            int pixelX = pos.x, pixelY = pos.y;
+            bool ok = Liverstock_farm_system::getInstance()->plant_seed(itemInHand, pixelX, pixelY);
+            if (ok) {
+                bag->removeItem(itemInHand, 1);
+            }
+        }
+        else if (itemInHand == FOOD) {
+            int pixelX = pos.x, pixelY = pos.y;
+            bool ok = Farm_system::getInstance()->add_fertilizer(100, pixelX, pixelY);
+            if (ok) {
+                bag->removeItem(itemInHand, 1);
+            }
+            ok = Liverstock_farm_system::getInstance()->add_food(100, pixelX, pixelY);
+            if (ok) {
+                bag->removeItem(itemInHand, 1);
+            }
+        }
+    }
     auto currentPosition = pos;
     currentPosition.x += this->getScaleX() / 2;
     currentPosition.y += this->getScaleY() / 2;
@@ -562,7 +607,7 @@ void Player::moveUpdate(MotionManager* information)
     // 更新位置
     information->playerPosition = currentPosition;
     // 更新血量
-    health += information->deltaPlayerHealth;
+    //health += information->deltaPlayerHealth;
 }
 
 Vector<PlayerPart*> Player::get_parts()
@@ -616,8 +661,55 @@ void NPC::communicate()
     communicating = true;
     // 对话框部分
     auto dialogFrame = DialogFrame::create(dialogs.at(0));
-    dialogFrame->setPosition(Vec2(-625, -800));
-    this->addChild(dialogFrame);
+    //dialogFrame->setPosition(Vec2(-625, -800));
+    //this->addChild(dialogFrame);
+
+
+    // 获取 Director 的 _notificationNode
+    auto notificationNode = Director::getInstance()->getNotificationNode();
+    // 如果 _notificationNode 为空，则创建一个新的 Node
+    if (!notificationNode) {
+        notificationNode = Node::create();
+        Director::getInstance()->setNotificationNode(notificationNode);
+    }
+    // 创建一个独立的 Layer
+    auto topLayer = Layer::create();
+    //topLayer->setTouchEnabled(true);
+    //auto listener = EventListenerTouchOneByOne::create();
+    //listener->setSwallowTouches(false);  // 不拦截触摸事件
+    //listener->onTouchBegan = [](Touch* touch, Event* event) {
+    //    return true;  // 返回 true 表示处理了触摸事件
+    //};
+    //_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, topLayer);
+    //topLayer->setSwallowTouches(false);  // 允许触摸事件传递到下层
+    topLayer->addChild(dialogFrame);
+    // 将 Layer 添加到 _notificationNode 中
+    notificationNode->addChild(topLayer);
+
+    auto menuItem = dialogFrame->getCloseButton();
+
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->onTouchBegan = [menuItem](Touch* touch, Event* event) {
+        // 获取触摸事件的屏幕坐标
+        Vec2 touchLocation = touch->getLocation();
+
+        // 将触摸坐标转换为世界坐标
+        Vec2 worldLocation = Director::getInstance()->convertToGL(touchLocation);
+
+        CCLOG("touch loc %2.f %2.f", touchLocation.x, touchLocation.y);
+        CCLOG("world loc %2.f %2.f", worldLocation.x, worldLocation.y);
+
+        // 获取 MenuItemImage 的边界框（世界坐标系）
+        Rect menuItemRect = menuItem->getBoundingBox();
+
+        // 判断触摸点是否在 MenuItemImage 的区域内
+        if (menuItemRect.containsPoint(worldLocation)) {
+            CCLOG("MenuItem touched!");
+            return true;  // 返回 true 表示处理了触摸事件
+        }
+        return false;  // 返回 false 表示不处理触摸事件
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, menuItem);
 
     // 设置关闭按钮的回调函数
     dialogFrame->setCloseCallback([&]() {
@@ -644,10 +736,10 @@ void NPC::communicate(const std::string& text, const std::string& emotion)
         communicating = false;
         });
     // 设置对话框头像
-    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_"+ emotion +".png");
+    dialogFrame->setAvatar("characters/portraits/Abigail/Abigail_" + emotion + ".png");
 }
 
-void NPC::moveUpdate(MotionManager * information)
+void NPC::moveUpdate(MotionManager* information)
 {
     auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
     auto gift = cocos2d::EventKeyboard::KeyCode::KEY_G;
@@ -685,26 +777,4 @@ void NPC::receive_gift()
     communicate("Thank you, I just love it!", "smile");
     auto socialInfo = SocialInfo::getInstance();
     socialInfo->increase_favorability("Abigail");
-}
-
-void Pierre::communicate()
-{
-    Director::getInstance()->pushScene(StoreScene::createScene());
-}
-
-void Pierre::moveUpdate(MotionManager* information)
-{
-    auto communicate = cocos2d::EventKeyboard::KeyCode::KEY_C;
-    if (information->keyMap[communicate])
-    {
-        information->keyMap[communicate] = false;
-        // 距离多少能交互？
-        const int dis_limit = 30;
-        float dis = abs(information->playerPosition.x - this->getPosition().x) +
-            abs(information->playerPosition.y - this->getPosition().y);
-        if (dis < dis_limit)
-        {
-            this->communicate();
-        }
-    }
 }

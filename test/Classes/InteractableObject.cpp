@@ -9,6 +9,7 @@ void TeleportPoint::moveUpdate(MotionManager* information) {
 		// ¼ÆËãÅ·ÊÏ¾àÀë
 		double distance = std::hypot(getPosition().x - information->playerPosition.x, getPosition().y - information->playerPosition.y);
 		if (distance <= limitDistance) {
+			information->keyMap[communicate] = false;
 			movableScene->changeScene(toMap);
 		}
 	}
