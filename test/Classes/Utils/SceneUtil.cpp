@@ -30,6 +30,7 @@ namespace SceneUtil {
 	void gotoHouse(int x, int y, Direction faceTo) {
 		playerInfo = { x, y, faceTo };
 		changeScene(FarmHouseScene::create());
+		//Director::getInstance()->pushScene(FarmHouseScene::create());
 	}
 
 	void gotoTown(int x, int y, Direction faceTo) {

@@ -1,6 +1,7 @@
 #include "MovableScene.h"
 #include "MotionManager.h"
 #include "Constant.h"
+#include "Utils/MapUtil.h"
 
 
 void MovableScene::go(Direction direction) {

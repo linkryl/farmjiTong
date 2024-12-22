@@ -160,7 +160,7 @@ out_info Farm_system::get_info(int x, int y, bool isTile)//»ñÈ¡ÓÃÓÚ¸üĞÂÇ°¶ËµÄĞÅÏ
 	else {
 		get_closest_land(x, y, add_x, add_y);//»ñÈ¡ÄÜ²Ù×÷µÄÅ©Ìï 
 	}
-	
+
 	//ÉùÃ÷²¢³õÊ¼»¯ 
 	out_info now_info;
 	now_info.death_flag = false;

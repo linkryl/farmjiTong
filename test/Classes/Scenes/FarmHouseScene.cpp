@@ -13,7 +13,7 @@
 #include "../Utils/SceneUtil.h"
 #include "../Systems/Farm_system.h"
 #include "../Systems/Livestock_farm_system.h"
-#include "../Systems/Time_system.h"
+#include "Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
 #include "InteractableObject.h"
@@ -85,9 +85,9 @@ bool FarmHouseScene::init()
     this->setScale(GAME_SCALE);
 
     // 初始化人物
-    auto farmer = Player::create();
-    
-    farmer->setTiledMap(map);
+    auto farmer = Player::getInstance();
+
+    farmer->setTiledMap(map);/*
     farmer->setAnchorPoint(Vec2(0, 0));
     farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
     farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
@@ -95,7 +95,7 @@ bool FarmHouseScene::init()
     farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
     farmer->add_wearing("/wearing/hat", "hat", 3);
     farmer->add_wearing("/wearing/shirt", "shirt", 2);
-    farmer->add_shadow("/shadow/shadow.png");
+    farmer->add_shadow("/shadow/shadow.png");*/
 
     farmer->setPosition(playerPosition);
 
@@ -123,7 +123,7 @@ bool FarmHouseScene::init()
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         getMotionManager()->keyMap[keyCode] = true;
-    };
+        };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         getMotionManager()->keyMap[keyCode] = false;
         if (keyCode == EventKeyboard::KeyCode::KEY_W ||
@@ -136,7 +136,7 @@ bool FarmHouseScene::init()
             this->stopAllActions();
             this->returnMiddlePosition();
         }
-    };
+        };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
 
@@ -161,4 +161,3 @@ void FarmHouseScene::menuCloseCallback(Ref* pSender)
 {
     Director::getInstance()->end();
 }
-
