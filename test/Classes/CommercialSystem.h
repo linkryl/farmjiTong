@@ -8,8 +8,6 @@ using namespace std;
 class CommercialSystem
 {
 private:
-	// 物品ID->物品价格
-	map<int, int> IDToPrice;
 	// 昨日的物品供给量
 	map<int, int> yesterday_supply;
 	// 昨日的物品需求量
@@ -19,6 +17,13 @@ private:
 	// 今日的物品需求量
 	map<int, int> today_demand;
 public:
+	// 物品ID->物品价格
+	map<int, int> IDToPrice;
+	static CommercialSystem* getInstance()
+	{
+		static CommercialSystem* res = new CommercialSystem();
+		return res;
+	}
 	// 输入ID-价格对序列来初始化价格
 	void initialize_price(const vector<pair<int, int>>& input)
 	{
@@ -38,7 +43,7 @@ public:
 			int id = item.first;
 			int price = item.second;
 			// 价格变化量
-			int delta_price = rand() % int(price / 100.0);
+			int delta_price = (rand() % int(price))/100;
 			if (yesterday_demand[id] - yesterday_supply[id] > 0)
 			{
 				if (yesterday_supply[id])

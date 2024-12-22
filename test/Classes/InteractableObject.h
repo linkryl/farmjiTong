@@ -8,6 +8,9 @@ USING_NS_CC;
 class InteractableObject : public Node, public Movable {
 public:
 	//void moveUpdate(MotionManager* information) = 0;
+	void regist(MotionManager* motionManager, Node* father) override {
+
+	}
 };
 
 class TeleportPoint : public InteractableObject {

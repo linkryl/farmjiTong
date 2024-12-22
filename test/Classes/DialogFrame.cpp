@@ -7,6 +7,7 @@ DialogFrame* DialogFrame::create(const std::string& content)
     DialogFrame* dialogFrame = new (std::nothrow) DialogFrame();
     if (dialogFrame && dialogFrame->init(content))
     {
+        dialogFrame->ifCreated = true;
         dialogFrame->autorelease();
         return dialogFrame;
     }
@@ -43,23 +44,23 @@ void DialogFrame::initUI(const std::string& content)
     contentLabel->setPosition(background->getContentSize().width / 2, background->getContentSize().height / 2);
     background->addChild(contentLabel);
 
-    // 创建关闭按钮
-    auto closeButton = MenuItemImage::create("DialogFrame/cancelBotton.png", "DialogFrame/cancelBotton.png", [this](Ref* sender) {
-        if (closeCallback)
-        {
-            closeCallback();
-        }
-        this->closeDialog();
-        });
-    closeButton->setPosition(background->getContentSize().width - closeButton->getContentSize().width / 2, background->getContentSize().height - closeButton->getContentSize().height / 2);
+    //// 创建关闭按钮
+    //auto closeButton = MenuItemImage::create("DialogFrame/cancelBotton.png", "DialogFrame/cancelBotton.png", [this](Ref* sender) {
+    //    if (closeCallback)
+    //    {
+    //        closeCallback();
+    //    }
+    //    this->closeDialog();
+    //    });
+    //closeButton->setPosition(background->getContentSize().width - closeButton->getContentSize().width / 2, background->getContentSize().height - closeButton->getContentSize().height / 2);
 
-    // 创建下一个对话按钮
-    auto nextButton = MenuItemImage::create("DialogFrame/nextBotton.png", "DialogFrame/nextBotton.png", [this](Ref* sender) {
-        this->nextDialog();
-        });
-    nextButton->setPosition(background->getContentSize().width / 2, closeButton->getContentSize().height / 2);
+    //// 创建下一个对话按钮
+    //auto nextButton = MenuItemImage::create("DialogFrame/nextBotton.png", "DialogFrame/nextBotton.png", [this](Ref* sender) {
+    //    this->nextDialog();
+    //    });
+    //nextButton->setPosition(background->getContentSize().width / 2, nextButton->getContentSize().height / 2);
 
-    auto menu = Menu::create(closeButton, nextButton, nullptr);
+    auto menu = Menu::create(nullptr);
     menu->setPosition(Vec2::ZERO);
     background->addChild(menu);
 
@@ -80,7 +81,8 @@ void DialogFrame::updateContent(const std::string& newContent)
 
 void DialogFrame::closeDialog()
 {
-    this->removeFromParentAndCleanup(true);
+    ifCreated = false;
+    this->_parent->removeChild(this);
 }
 
 void DialogFrame::setCloseCallback(const std::function<void()>& callback)

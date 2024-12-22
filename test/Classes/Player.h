@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "cocos2d.h"
 #include "PlayerData.h"
-#include "Util.h"
+#include "Utils/MapUtil.h"
 #include "MotionManager.h"  // 包含 MotionManager.h
 #include <map>
 #include <string>
@@ -16,7 +16,7 @@ using namespace cocos2d;
 #define WEARING_TRAVELSAL(wearing) for (const auto wearing : wearings)
 
 class Player;
-enum Part_catogory { HUMAN, TOOL, WEAPON, WEARING, SHADOW };
+
 
 class PlayerPart : public Sprite
 {
@@ -66,13 +66,13 @@ protected:
     std::chrono::time_point<std::chrono::steady_clock> lastFishingTime;
     // 给对应的衣服一个编号
     // 角色的身体各个部分
-    Vector<PlayerPart*> parts;
+    std::vector<PlayerPart*> parts;
     // 角色手持的工具（重击动作）
     PlayerPart* tool;
     // 角色手持的武器（轻击动作）
     PlayerPart* weapon;
     // 角色的衣着
-    Vector<PlayerPart*> wearings;
+    std::vector<PlayerPart*> wearings;
     // 角色的影子
     PlayerPart* shadow;
 
@@ -96,8 +96,10 @@ public:
 
     // 玩家的帽子，衣服，裤子的id
     std::map<std::string, int> wearingId;
-    Player(TMXTiledMap* map = nullptr) : luck(0), speed(1), faceTo(DOWN) {
+    Player(TMXTiledMap* map = nullptr) : luck(0), speed(1), faceTo(DOWN), health(100) {
         tmxMap = map;
+        wearingId["hat"] = 0;
+        wearingId["shirt"] = 0;
     }
 
     static Player* getInstance();
@@ -106,6 +108,12 @@ public:
     virtual void moveUpdate(MotionManager* information);
     void setTiledMap(TMXTiledMap* map);
     TMXTiledMap* getTiledMap();
+    void setSpeed(int speed) {
+        this->speed = speed;
+    }
+    int getSpeed() {
+        return speed;
+    }
     void add_wearing(const std::string& path, const std::string& part_name, const int id);
     void add_part(const std::string& path, const std::string& part_name);
     void add_tool(const std::string& path, const std::string& tool_name);
@@ -116,18 +124,23 @@ public:
     void light_hit();
     void fishing();
     void watering();
+    void open_backpack();
     virtual void stand();
     void setPosition(const Vec2& vec);
     void setScale(const float scale);
-    Vector<PlayerPart*> get_parts();
+    std::vector<PlayerPart*> get_parts();
     PlayerPart* get_tools();
     PlayerPart* get_weapons();
-    Vector<PlayerPart*> get_wearings();
+    std::vector<PlayerPart*> get_wearings();
     PlayerPart* get_shadow();
-
+    int getHp()
+    {
+        return health;
+    }
     static Player* create();
 };
 
+class DialogFrame;
 class NPC : public Player
 {
 private:
@@ -135,6 +148,7 @@ private:
     std::vector<std::string> dialogs;
     // 在NPC类中添加一个成员变量来记录上一次送礼的时间
     std::chrono::time_point<std::chrono::steady_clock> lastGiftTime;
+    DialogFrame* thisDialog;
     // 正在对话
     bool communicating;
 public:

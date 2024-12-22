@@ -65,6 +65,7 @@ void Bat::regist(MotionManager* motionManager, Node* father, int Zorder)
 {
     motionManager->add_movableObject(this);
     father->addChild(this, Zorder);
+    this->father = father;
 }
 void Bat::moveUpdate(MotionManager* information)
 {

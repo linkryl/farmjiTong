@@ -4,6 +4,8 @@
 class DialogFrame : public cocos2d::Layer
 {
 public:
+    // 是否创建
+    bool ifCreated;
     // 创建一个对话框实例
     static DialogFrame* create(const std::string& content);
 
@@ -29,6 +31,7 @@ public:
     void nextDialog();
 
 private:
+
     // 初始化UI元素
     void initUI(const std::string& content);
 
