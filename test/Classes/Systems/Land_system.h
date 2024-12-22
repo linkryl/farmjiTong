@@ -1,4 +1,5 @@
 #pragma once
+#include "cocos2d.h"
 #include "map_system.h" 
 
 class Land//土地种植类 

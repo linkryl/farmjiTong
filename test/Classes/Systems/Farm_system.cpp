@@ -1,9 +1,42 @@
 #include "Farm_system.h"
 
-Farm_system::Farm_system(int x, int y) : base_add_x(x), base_add_y(y)
-{
-	//我这里默认值弄成了0，前端写好后记得修改
+Farm_system::Farm_system(int x, int y) : base_add_x(x), base_add_y(y) {
+	for (int i = 0; i < 5; ++i) {
+		for (int j = 0; j < 5; ++j) {
+			plantSprite[i][j] = nullptr;
+		}
+	}
 }
+
+// 重绘整个农场
+void Farm_system::drawFarm() {
+	for (int i = 0; i < 5; ++i) {
+		for (int j = 4; j >= 0; --j) {
+			drawFarm(i, j);
+		}
+	}
+}
+// 重绘一格农场
+void Farm_system::drawFarm(int x, int y) {
+	Scene* scene = Director::getInstance()->getRunningScene();
+	if (plantSprite[x][y] != nullptr) {
+		scene->removeChild(plantSprite[x][y]);
+	}
+	//int dx, dy;
+	//get_closest_land(x, y, dx, dy);
+	auto info = get_info(x, y, true);
+	if (info.type == 0) {
+		plantSprite[x][y] = nullptr;
+		return;
+	}
+	auto str = "/Crops/" + crop_names[info.type] + "_" + std::to_string(info.step) + ".png";
+	plantSprite[x][y] = Sprite::create("/Crops/" + crop_names[info.type] + "_" + std::to_string(info.step) + ".png");
+	plantSprite[x][y]->setPosition(16 * (FARM_OFFSET_X + x), 16 * (FARM_OFFSET_Y + y));
+	plantSprite[x][y]->setAnchorPoint(Vec2(0, 0));
+	plantSprite[x][y]->setColor(ColorSystem::getPlantColor(info));
+	scene->addChild(plantSprite[x][y]);
+}
+
 bool Farm_system::update_conditon(int x, int y, int day)//根据当前的天数和地址进行指定坐标的作物更新 
 {
 	int add_x, add_y;
@@ -32,15 +65,22 @@ void Farm_system::update_all(int day)//根据当前的天数更新所有农田
 		}
 	}
 }
-bool Farm_system::plant_seed(int seed, int x, int y)//播种操作 
+bool Farm_system::plant_seed(int seed, int x, int y, bool isTile)//播种操作 
 {
 	int add_x, add_y;
-	get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
-	if (add_x == -1 || add_y == -1)//如果溢出 
-	{
-		return false;//没有能操作的 
+	if (isTile) {
+		add_x = x, add_y = y;
 	}
-	return farm_land[add_x][add_y].plant_seed(seed);//进行对指定土地的播种操作 
+	else {
+		get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
+		if (add_x == -1 || add_y == -1)//如果溢出 
+		{
+			return false;//没有能操作的 
+		}
+	}
+	bool result = farm_land[add_x][add_y].plant_seed(seed);//进行对指定土地的播种操作 
+	if (result) drawFarm(add_x, add_y);
+	return result;
 }
 Harvest Farm_system::get_harvest(int x, int y)//收获函数
 {
@@ -59,40 +99,68 @@ Harvest Farm_system::get_harvest(int x, int y)//收获函数
 	//	cout<<"ztz11"<<endl;
 	return farm_land[add_x][add_y].get_harvest();
 }
-bool Farm_system::add_fertilizer(double fertilizer_num, int x, int y)//施肥函数 
+bool Farm_system::add_fertilizer(double fertilizer_num, int x, int y, bool isTile)//施肥函数 
 {
 	int add_x, add_y;
-	get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
-	if (add_x == -1 || add_y == -1)//如果溢出 
-	{
-		return false;//没有能操作的 
+	if (isTile) {
+		add_x = x, add_y = y;
 	}
-	return farm_land[add_x][add_y].add_fertilizer(fertilizer_num);
-}
-bool Farm_system::add_water(double water_num, int x, int y)//浇水函数 
-{
-	int add_x, add_y;
-	get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
-	if (add_x == -1 || add_y == -1)//如果溢出 
-	{
-		return false;//没有能操作的 
+	else {
+		get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
+		if (add_x == -1 || add_y == -1)//如果溢出 
+		{
+			return false;//没有能操作的 
+		}
 	}
-	return farm_land[add_x][add_y].add_water(water_num);
+	bool result = farm_land[add_x][add_y].add_fertilizer(fertilizer_num);
+	if (result) drawFarm(add_x, add_y);
+	return result;
 }
-bool Farm_system::add_medicine(int x, int y)//治疗函数 
+bool Farm_system::add_water(double water_num, int x, int y, bool isTile)//浇水函数 
 {
 	int add_x, add_y;
-	get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
-	if (add_x == -1 || add_y == -1)//如果溢出 
-	{
-		return false;//没有能操作的 
+	if (isTile) {
+		add_x = x, add_y = y;
 	}
-	return farm_land[add_x][add_y].add_medicine();
+	else {
+		get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
+		if (add_x == -1 || add_y == -1)//如果溢出 
+		{
+			return false;//没有能操作的 
+		}
+	}
+	bool result = farm_land[add_x][add_y].add_water(water_num);
+	if (result) drawFarm(add_x, add_y);
+	return result;
 }
-out_info Farm_system::get_info(int x, int y)//获取用于更新前端的信息
+bool Farm_system::add_medicine(int x, int y, bool isTile)//治疗函数 
 {
 	int add_x, add_y;
-	get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
+	if (isTile) {
+		add_x = x, add_y = y;
+	}
+	else {
+		get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
+		if (add_x == -1 || add_y == -1)//如果溢出 
+		{
+			return false;//没有能操作的 
+		}
+	}
+	bool result = farm_land[add_x][add_y].add_medicine();
+	if (result) drawFarm(add_x, add_y);
+	return result;
+}
+// x,y为像素坐标
+out_info Farm_system::get_info(int x, int y, bool isTile)//获取用于更新前端的信息
+{
+	int add_x, add_y;
+	if (isTile) {
+		add_x = x, add_y = y;
+	}
+	else {
+		get_closest_land(x, y, add_x, add_y);//获取能操作的农田 
+	}
+	
 	//声明并初始化 
 	out_info now_info;
 	now_info.death_flag = false;
@@ -117,11 +185,11 @@ void Farm_system::get_closest_land(int x, int y, int& add_x, int& add_y)//将坐标
 	{
 		return;
 	}
-	if (y <= (base_add_x - 8) || y >= (base_add_x + 72))//y越界 
+	if (y <= (base_add_y - 8) || y >= (base_add_y + 72))//y越界 
 	{
 		return;
 	}
 	//不越界的话 
-	add_x = (x + 8) / 16;
-	add_y = (y + 8) / 16;//进行四舍五入的取值 
+	add_x = (x + 8 - base_add_x) / 16;
+	add_y = (y + 8 - base_add_y) / 16;//进行四舍五入的取值 
 }

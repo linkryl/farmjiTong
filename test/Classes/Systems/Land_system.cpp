@@ -3,7 +3,7 @@
 Land::Land()//构造函数进行初始化 
 {
 	growth_time = 0;
-	water_condition = 25;//初始水为25 
+	water_condition = 0;//初始水为25 
 	fertilizer_condition = 0;//初始没有肥料 
 	planted_flag = false;
 }

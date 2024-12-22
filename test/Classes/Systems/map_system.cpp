@@ -71,6 +71,7 @@ Prop_system::Prop_system()
 	Harvest_map.insert(std::make_pair(1100, vegetable_harvest));
 	Harvest_map.insert(std::make_pair(1101, corn_harvest));
 	Harvest_map.insert(std::make_pair(2101, pig_harvest));
+
 	Plant_map.insert(std::make_pair(1110, vegetable));
 	Plant_map.insert(std::make_pair(1111, corn));
 	Animal_map.insert(std::make_pair(2110, pig));
