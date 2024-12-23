@@ -6,8 +6,8 @@
 #pragma once
 #include "cocos2d.h"
 #include "string"
-#include "Constant.h"
-#include "PlayerData.h"
+#include "../Constant.h"
+#include "../PlayerData.h"
 
 USING_NS_CC;
 namespace SceneUtil {
