@@ -24,18 +24,18 @@ void Land::update_conditon(int now_season)//每日状态更新函数，需要在日期发生变更
 	//		cout<<"now_season: "<<now_season<<endl;
 	switch (now_season)
 	{
-		case 1:
-			water_weight = 1, fertilizer_weight = 1, growth_speed = 1;//春天权重 
-			break;
-		case 2:
-			water_weight = 2, fertilizer_weight = 2, growth_speed = 2;//夏天权重 
-			break;
-		case 3:
-			water_weight = 1.5, fertilizer_weight = 0.5, growth_speed = 1;//秋天权重 
-			break;
-		case 4:
-			water_weight = 0.5, fertilizer_weight = 0.5, growth_speed = 0.5;//冬天权重 
-			break;
+	case 1:
+		water_weight = 1, fertilizer_weight = 1, growth_speed = 1;//春天权重 
+		break;
+	case 2:
+		water_weight = 2, fertilizer_weight = 2, growth_speed = 2;//夏天权重 
+		break;
+	case 3:
+		water_weight = 1.5, fertilizer_weight = 0.5, growth_speed = 1;//秋天权重 
+		break;
+	case 4:
+		water_weight = 0.5, fertilizer_weight = 0.5, growth_speed = 0.5;//冬天权重 
+		break;
 	}
 	now_consumption.fertilizer_consumption *= fertilizer_weight;//根据权重更新消耗量 
 	now_consumption.water_consumption *= water_weight;

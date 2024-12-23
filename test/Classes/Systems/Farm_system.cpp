@@ -12,28 +12,39 @@ Farm_system::Farm_system(int x, int y) : base_add_x(x), base_add_y(y) {
 void Farm_system::drawFarm() {
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 4; j >= 0; --j) {
-			drawFarm(i, j);
+			drawFarm(i, j, true);
 		}
 	}
 }
 // ÖØ»æÒ»¸ñÅ©³¡
-void Farm_system::drawFarm(int x, int y) {
+void Farm_system::drawFarm(int x, int y, bool demo) {
 	Scene* scene = Director::getInstance()->getRunningScene();
 	if (plantSprite[x][y] != nullptr) {
 		scene->removeChild(plantSprite[x][y]);
 	}
-	//int dx, dy;
-	//get_closest_land(x, y, dx, dy);
+	
+	if (demo) {
+		plantSprite[x][y] = Sprite::create("/Crops/" + crop_names[1110 + rand() % 2] + "_" + std::to_string(rand() % 6 + 1) + ".png");
+		plantSprite[x][y]->setPosition(16 * (FARM_OFFSET_X + x), 16 * (FARM_OFFSET_Y + y));
+		plantSprite[x][y]->setAnchorPoint(Vec2(0, 0));
+		//plantSprite[x][y]->setColor(ColorSystem::getPlantColor(info));
+		scene->addChild(plantSprite[x][y]);
+	}
+
 	auto info = get_info(x, y, true);
 	if (info.type == 0) {
 		plantSprite[x][y] = nullptr;
 		return;
 	}
-	auto str = "/Crops/" + crop_names[info.type] + "_" + std::to_string(info.step) + ".png";
+	auto str = "/Crops/" + crop_names[1110 + rand() % 2] + "_" + std::to_string(rand() % 6 + 1) + ".png";
+	
 	plantSprite[x][y] = Sprite::create("/Crops/" + crop_names[info.type] + "_" + std::to_string(info.step) + ".png");
 	plantSprite[x][y]->setPosition(16 * (FARM_OFFSET_X + x), 16 * (FARM_OFFSET_Y + y));
 	plantSprite[x][y]->setAnchorPoint(Vec2(0, 0));
 	plantSprite[x][y]->setColor(ColorSystem::getPlantColor(info));
+
+	CCLOG(str);
+	
 	scene->addChild(plantSprite[x][y]);
 }
 
@@ -160,7 +171,7 @@ out_info Farm_system::get_info(int x, int y, bool isTile)//»ñÈ¡ÓÃÓÚ¸üĞÂÇ°¶ËµÄĞÅÏ
 	else {
 		get_closest_land(x, y, add_x, add_y);//»ñÈ¡ÄÜ²Ù×÷µÄÅ©Ìï 
 	}
-	
+
 	//ÉùÃ÷²¢³õÊ¼»¯ 
 	out_info now_info;
 	now_info.death_flag = false;

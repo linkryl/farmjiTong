@@ -15,7 +15,7 @@ public:
 	int base_add_x;//左下角土地的左下角x坐标 
 	int base_add_y;//左下角土地的左下角y坐标 
 public:
-	std::map<int, std::string> crop_names{ {PARSNIP_PLANT, "parsnip"}, { WHEAT_PLANT, "wheat" }};
+	std::map<int, std::string> crop_names{ {PARSNIP_PLANT, "parsnip"}, { WHEAT_PLANT, "wheat" } };
 	Farm_system(int x = FARM_OFFSET_X * 16, int y = FARM_OFFSET_Y * 16);
 	static Farm_system* getInstance() {
 		static Farm_system instance;
@@ -23,7 +23,7 @@ public:
 	}
 	// 重新绘制农场的所有精灵
 	void drawFarm();
-	void drawFarm(int x, int y);
+	void drawFarm(int x, int y, bool demo = false);
 	bool update_conditon(int x, int y, int day);//更新指定位置的作物状态函数
 	void update_all(int day);//根据日期更新所有的作物 
 	bool plant_seed(int seed, int x, int y, bool isTile = false);//种植函数，返回true表示播种成功，false为播种失败 
