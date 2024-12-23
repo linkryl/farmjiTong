@@ -1,5 +1,5 @@
-ï»¿#include "Player.h"
-#include "Util.h"
+#include "Player.h"
+#include "Utils/MapUtil.h"
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
 #include <iostream>
@@ -24,19 +24,19 @@ static void problemLoading(const char* filename)
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
 }
 
-// è¿åŠ¨ç®¡ç†å™¨
+// ÔË¶¯¹ÜÀíÆ÷
 MotionManager motionManager;
 enum Character { player, Abigail };
-// è§’è‰²å¯¹åº”çš„ID
+// ½ÇÉ«¶ÔÓ¦µÄID
 std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
-Time_system time_system;
+extern Time_system time_system;
 void HelloWorld::update(float delta)
 {
     time_system.update_time();
     auto time = time_system.get_clock_time();
-    // åˆ›å»ºå¯¹è¯å†…å®¹æ ‡ç­¾
+    // ´´½¨¶Ô»°ÄÚÈİ±êÇ©
     this->removeChildByTag(69210);
-    //////// æ—¶é—´æ£€æµ‹
+    //////// Ê±¼ä¼ì²â
     /////
     auto contentLabel = Label::createWithTTF(std::to_string(time), "fonts/arial.ttf", 24);
     contentLabel->setTag(69210);
@@ -81,15 +81,15 @@ bool HelloWorld::init()
     // 3. add your codes below...
     // add a label shows "Hello World"
     // create and initialize a label
-    // æ·»åŠ æœç´¢è·¯å¾„
+    // Ìí¼ÓËÑË÷Â·¾¶
     FileUtils::getInstance()->addSearchPath("E:\\cocos2d-x-3.17.2\\cocos2d-x-3.17.2\\testCpp2\\proj.win32\\Debug.win32\\content");
 
-    // NPCéƒ¨åˆ†
+    // NPC²¿·Ö
     auto abigail = new NPC();
     abigail->add_part("characters/model/Abigail/walk_down/00.png", "body");
     abigail->add_shadow("/shadow/shadow.png");
     abigail->setTiledMap(testMap);
-    std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."}};
+    std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."} };
     abigail->add_dialogs(dialogList);
 
     abigail->setLocalZOrder(1);
@@ -104,10 +104,10 @@ bool HelloWorld::init()
         this->addChild(part);*/
     abigail->regist(&motionManager, this);
 
-    // äººç‰©éƒ¨åˆ†
+    // ÈËÎï²¿·Ö
     auto farmer = Player::create();
     farmer->setTiledMap(testMap);
-    
+
     farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
     farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
     farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
@@ -123,7 +123,7 @@ bool HelloWorld::init()
 
     farmer->regist(&motionManager, this, 2);
 
-    // æ€ªç‰©éƒ¨åˆ†
+    // ¹ÖÎï²¿·Ö
     Bat* bat1 = (Bat*)Bat::create("monster/bat/bat_fly_0.png", 50, 100, this);
     bat1->setPosition(200, 300);
     bat1->regist(&motionManager, this);
@@ -133,7 +133,7 @@ bool HelloWorld::init()
     bat2->regist(&motionManager, this);
 
 
-    //é”®ç›˜äº‹ä»¶ç›‘å¬å™¨
+    //¼üÅÌÊÂ¼ş¼àÌıÆ÷
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         log("press");

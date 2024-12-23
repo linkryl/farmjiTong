@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
 #include "Scenes/FarmScene.h"
@@ -8,14 +10,13 @@
 #include "Scenes/FarmHouseScene.h"
 #include "Systems/Farm_system.h"
 #include "Systems/Livestock_farm_system.h"
-#include "Systems/Time_system.h"
+#include "Time_system.h"
 #include "Constant.h"
 #include "PlayerData.h"
+#include "CommercialSystem.h"
+#include "InitialScene.h"
+#include "StartupScene.h"
 
-// #define USE_AUDIO_ENGINE 1
-// #define USE_SIMPLE_AUDIO_ENGINE 1
-
-int all_var = 0;
 Farm_system farm_system(FARM_OFFSET_X * 16, FARM_OFFSET_Y * 16);
 Liverstock_farm_system live_farm_system(LIVE_FARM_OFFSET_X * 16, LIVE_FARM_OFFSET_Y * 16);
 Time_system time_system;
@@ -33,6 +34,9 @@ std::map<int, std::string> crop_names{ {1110, "parsnip"}, { 1111, "wheat" }, {21
 // 作物id映射到作物素材图片数量
 std::map<int, int> crop_image_number{ {1110, 6}, { 1111, 6 }, {2110, 2} };
 
+// #define USE_AUDIO_ENGINE 1
+// #define USE_SIMPLE_AUDIO_ENGINE 1
+
 #if USE_AUDIO_ENGINE && USE_SIMPLE_AUDIO_ENGINE
 #error "Don't use AudioEngine and SimpleAudioEngine at the same time. Please just select one in your game!"
 #endif
@@ -47,10 +51,9 @@ using namespace CocosDenshion;
 
 USING_NS_CC;
 
-static cocos2d::Size farmResolutionSize = cocos2d::Size(1280, 1040);
-static cocos2d::Size townResolutionSize = cocos2d::Size(2080, 1760);
-static cocos2d::Size myResolutionSize = cocos2d::Size(960, 780);
-static cocos2d::Size designResolutionSize = farmResolutionSize;
+//static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
+//static cocos2d::Size designResolutionSize = cocos2d::Size(16 * 80, 16 * 65);
+static cocos2d::Size designResolutionSize = cocos2d::Size(1600, 900);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
@@ -91,10 +94,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
-        // 这里可以设置窗口标题，窗口大小喵
-        glview = GLViewImpl::createWithRect("Steins;Gate", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+        glview = GLViewImpl::createWithRect("testCpp2", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
 #else
-        glview = GLViewImpl::create("HelloCocos");
+        glview = GLViewImpl::create("testCpp2");
 #endif
         director->setOpenGLView(glview);
     }
@@ -104,11 +106,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
-
+#if 0
     // Set the design resolution
     glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
-
-#if 0
     auto frameSize = glview->getFrameSize();
     // if the frame's height is larger than the height of medium size.
     if (frameSize.height > mediumResolutionSize.height)
@@ -129,7 +129,6 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     register_all_packages();
 
-
     // 获取 Director 的 _notificationNode
     auto notificationNode = Director::getInstance()->getNotificationNode();
     // 如果 _notificationNode 为空，则创建一个新的 Node
@@ -138,20 +137,28 @@ bool AppDelegate::applicationDidFinishLaunching() {
         Director::getInstance()->setNotificationNode(notificationNode);
     }
 
-
     // create a scene. it's an autorelease object
-    
     //auto scene = HelloWorld::createScene();
-    
-    auto scene = FarmScene::createScene();
-    //auto scene = TownScene::createScene();
-    //auto scene = WoodsScene::createScene();
-    //auto scene = CaveScene::createScene();
-    //auto scene = MountainScene::createScene();
-    //auto scene = FarmHouseScene::createScene();
+    srand(time(0));
 
+    auto commercialSysterm = CommercialSystem::getInstance();
+    // 商品价格
+    const std::vector<pair<int, int>> prices =
+    {
+        {1100,10},{1101,8}, {1102,5},
+        {2100,300}, {3020,5}, {3021,6},
+        {3022,30}, {3023,15}, {3024,100},
+        {3025,500}, {3026,2000}, {3027,10000},
+        {3101,50},{3120,3},{3121,20},
+        {3122,500},{3122,500},{3124,800},
+        {3125,850},{3126,15000}
+    };
+    commercialSysterm->initialize_price(prices);
+    //FarmScene
+    auto scene = StartupScene::createScene();
     // run
     director->runWithScene(scene);
+
 
     return true;
 }

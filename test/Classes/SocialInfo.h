@@ -33,7 +33,13 @@ public:
     std::vector<std::string> NPC_names;
 
     SocialInfo()
-        = default;
+    {
+        add_NPC("Abigail");
+        Entrust en1("Abigail", "I need crops", "FarmIcon");
+        Entrust en2("Alex", "I need fish", "FishIcon");
+        add_entrust(en1);
+        add_entrust(en2);
+    }
     static SocialInfo* getInstance()
     {
         static SocialInfo* instance = new SocialInfo(); // 使用静态局部变量初始化
