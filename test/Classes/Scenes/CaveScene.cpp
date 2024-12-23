@@ -11,10 +11,12 @@
 #include "../Utils/SceneUtil.h"
 #include "../Systems/Farm_system.h"
 #include "../Systems/Livestock_farm_system.h"
-#include "../Systems/Time_system.h"
+#include "../Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
 #include "InteractableObject.h"
+#include "Monster.h"
+#include "Drop.h"
 
 USING_NS_CC;
 
@@ -22,8 +24,6 @@ USING_NS_CC;
 extern Time_system time_system;
 // 需维护的玩家信息
 extern PlayerInfo playerInfo;
-// 运动管理器
-static MotionManager motionManager;
 enum Character { player, Abigail };
 // 角色对应的ID
 static std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
@@ -72,17 +72,12 @@ bool CaveScene::init()
     this->setScale(GAME_SCALE);
 
     // 初始化人物
-    auto farmer = Player::create();
+    auto farmer = Player::getInstance();
 
     farmer->setTiledMap(map);
     farmer->setAnchorPoint(Vec2(0, 0));
-    farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
-    farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
-    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
+    farmer->add_tool("/motion/heavy_hit_right/pickaxe/pickaxe_heavy_hit_right_5.png", "pickaxe");
     farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
-    farmer->add_wearing("/wearing/hat", "hat", 3);
-    farmer->add_wearing("/wearing/shirt", "shirt", 2);
-    farmer->add_shadow("/shadow/shadow.png");
 
     farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
 
@@ -90,6 +85,37 @@ bool CaveScene::init()
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
+    // 蝙蝠
+    Bat* bat1 = Bat::create("monster/bat/bat_fly_0.png", 5, 50);
+    bat1->setPosition(Vec2({ 500, 500 }));
+    bat1->regist(this->getMotionManager(), this, 20);
+
+    Bat* bat2 = Bat::create("monster/bat/bat_fly_0.png", 5, 50);
+    bat2->setPosition(Vec2({ 700, 590 }));
+    bat2->regist(this->getMotionManager(), this, 20);
+
+    // 石头
+    int num = 20;
+    
+    for (int i = 1; i <= 20; i++)
+    {
+        const auto mapSize = getTiledMap()->getMapSize();
+        auto buildingsLayer = getTiledMap()->getLayer("Buildings");
+        int x = -1;
+        int y = -1;
+        while (1) {
+            x = rand() % (int)mapSize.width;
+            y = rand() % (int)mapSize.height;
+            int id = buildingsLayer->getTileGIDAt(Vec2(x, y));
+            if (id == 0) {
+                break;
+            }
+        }
+        Stone* new_stone = Stone::create("mineral/Mystic_Stone.png");
+        new_stone->setScale(0.3);
+        new_stone->setPosition(tileCoordToPixel(x, y));
+        new_stone->regist(getMotionManager(), this);
+    }
 
     this->setPlayer(farmer);
 

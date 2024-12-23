@@ -7,17 +7,17 @@
 #include "CaveScene.h"
 #include "MountainScene.h"
 #include "FarmHouseScene.h"
-#include "BackpackManager.h"
 #include "Player.h"
 #include "../Utils/MapUtil.h"
 #include "../Utils/SceneUtil.h"
 #include "../Systems/Farm_system.h"
 #include "../Systems/Livestock_farm_system.h"
-#include "../Systems/Time_system.h"
+#include "../Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
 #include "DialogFrame.h"
 #include "InteractableObject.h"
+#include "Drop.h"
 
 USING_NS_CC;
 
@@ -34,8 +34,6 @@ extern std::map<int, std::string> crop_names;
 extern std::map<int, int> crop_image_number;
 extern PlayerInfo playerInfo;
 
-// 运动管理器
-static MotionManager motionManager;
 // 角色对应的ID
 static std::map<Character, int> characterID = { {player, 114514}, {Abigail, 114} };
 
@@ -84,7 +82,6 @@ bool FarmScene::init()
 
     // 初始化农田
     if (1) {
-        CCLOG("Farm scene init!");
         Farm_system::getInstance()->drawFarm();
     }
 
@@ -94,21 +91,21 @@ bool FarmScene::init()
     }
 
     // 初始化人物
-    auto farmer = Player::create();
+    auto farmer = Player::getInstance();
     
     farmer->setTiledMap(map);
-    farmer->setAnchorPoint(Vec2(0.5, 0));
+    farmer->setAnchorPoint(Vec2(0, 0));
     farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
     farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
-    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
-    farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
-    farmer->add_wearing("/wearing/hat", "hat", 3);
-    farmer->add_wearing("/wearing/shirt", "shirt", 2);
+    farmer->add_tool("/motion/heavy_hit_right/axe/axe_heavy_hit_right_5.png", "axe");
+    farmer->add_weapon("/motion/light_hit_right/sickle/sickle_light_hit_right_5.png", "sickle");
+    /*farmer->add_wearing("/wearing/hat", "hat", 3);
+    farmer->add_wearing("/wearing/shirt", "shirt", 2);*/
     farmer->add_shadow("/shadow/shadow.png");
 
     farmer->setPosition(playerPosition);
 
-    farmer->regist(getMotionManager(), this, 20);
+    farmer->regist(getMotionManager(), this, 100);
 
     farmer->go(playerInfo.faceTo);
     farmer->stand();
@@ -117,22 +114,49 @@ bool FarmScene::init()
 
     getMotionManager()->add_movableObject(this);
 
-    // NPC部分
-    auto abigail = new NPC();
-    abigail->add_part("characters/model/Abigail/walk_down/00.png", "body");
-    abigail->add_shadow("/shadow/shadow.png");
-    abigail->setTiledMap(map);
-    std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."} };
-    abigail->add_dialogs(dialogList);
+    // 初始化树木
+    for (int i = 1; i <= 20; i++)
+    {
+        const auto mapSize = getTiledMap()->getMapSize();
+        auto buildingsLayer = getTiledMap()->getLayer("Buildings");
+        int x = -1;
+        int y = -1;
+        while (1) {
+            x = rand() % (int)mapSize.width;
+            y = rand() % (int)mapSize.height;
+            int id = buildingsLayer->getTileGIDAt(Vec2(x, y));
+            if (id != 0) {
+                continue;
+            }
+            if (x >= FARM_OFFSET_X && x <= FARM_OFFSET_X + 8 && y >= FARM_OFFSET_Y && y <= FARM_OFFSET_Y + 8) {
+                continue;
+            }
+            if (x >= LIVE_FARM_OFFSET_X - 2 && x <= LIVE_FARM_OFFSET_X + 10 && y >= LIVE_FARM_OFFSET_Y - 6 && y <= LIVE_FARM_OFFSET_Y + 6) {
+                continue;
+            }
+            if (x >= 45 && x <= 56 && y >= 65 - 27 && y <= 65 - 16) {
+                continue;
+            }
+            if (x >= 32 && x <= 48 && y >= 0 && y <= 65 - 47) {
+                continue;
+            }
+            if (x >= 68 && x <= 80 && y >= 65 - 35 && y <= 65 - 14) {
+                continue;
+            }
+            if (x >= 10 && x <= 45 && y >= 65 - 11 && y <= 65) {
+                continue;
+            }
+            if (x >= 0 && x <= 6 && y >= 65 - 65 && y <= 65 - 2) {
+                continue;
+            }
+            break;
+        }
+        Tree* new_tree = Tree::create("tree/tree_"+std::to_string(i%3)+".png");
+        new_tree->setScale(0.5);
+        new_tree->setPosition(tileCoordToPixel(x, y));
+        new_tree->regist(getMotionManager(), this);
+    }
 
-    abigail->setLocalZOrder(1);
-
-    abigail->setPosition(Vec2(615, 835));
-
-    auto Abigail_parts = abigail->get_parts();
-    /*for (auto part : Abigail_parts)
-        this->addChild(part);*/
-    abigail->regist(getMotionManager(), this);
 
     // 建立各传送点
     auto townTransportPoint = new TeleportPoint(TPMap::TOWN, this);
@@ -156,41 +180,14 @@ bool FarmScene::init()
     getMotionManager()->add_movableObject(mountainTransportPoint);
     getMotionManager()->add_movableObject(houseTransportPoint);
 
-    
     // 键盘事件监听器
     auto listener = EventListenerKeyboard::create();
     listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
         getMotionManager()->keyMap[keyCode] = true;
         if (keyCode == EventKeyboard::KeyCode::KEY_O) {
-            //crop->setColor(Color3B::RED);
-            
-            Bag::getInstance()->itemInHand = FOOD;
-            
-            int x = PLAYER_POSITION.x;
-            int y = PLAYER_POSITION.y;
-            int idx, idy;
-            Farm_system::getInstance()->get_closest_land(x, y, idx, idy);
-            CCLOG("farm %d %d", idx, idy);
-            Liverstock_farm_system::getInstance()->get_closest_corral(x, y, idx);
-            CCLOG("animal %d", idx);
-
-            Farm_system::getInstance()->plant_seed(WHEAT_SEED, x, y);
-
-            for (int i = 0; i < 5; ++i) {
-                int cnt[5] = { 0 };
-                for (int j = 0; j < 5; ++j) {
-                    auto info = Farm_system::getInstance()->farm_land[i][j].get_info();
-                    cnt[j] = info.type != 0;
-                }
-                CCLOG("%d %d %d %d %d", cnt[0], cnt[1], cnt[2], cnt[3], cnt[4]);
-            }
 
             Farm_system::getInstance()->drawFarm();
-
-            Liverstock_farm_system::getInstance()->plant_seed(PIG_SEED, x, y);
-
             Liverstock_farm_system::getInstance()->drawFarm();
-
         }
     };
     listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {

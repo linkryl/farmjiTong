@@ -11,7 +11,7 @@
 #include "../Utils/SceneUtil.h"
 #include "../Systems/Farm_system.h"
 #include "../Systems/Livestock_farm_system.h"
-#include "../Systems/Time_system.h"
+#include "../Time_system.h"
 #include "MotionManager.h"
 #include "Constant.h"
 #include "InteractableObject.h"
@@ -71,17 +71,10 @@ bool TownScene::init()
 
 
     // 初始化人物
-    auto farmer = Player::create();
+    auto farmer = Player::getInstance();
 
     farmer->setTiledMap(map);
     farmer->setAnchorPoint(Vec2(0, 0));
-    farmer->add_part("/motion/walk_down/body/body_walk_down_2.png", "body");
-    farmer->add_part("/motion/walk_down/arm/arm_walk_down_2.png", "arm");
-    farmer->add_tool("/motion/heavy_hit_right/hoe/hoe_heavy_hit_right_5.png", "hoe");
-    farmer->add_weapon("/motion/light_hit_right/sword/sword_light_hit_right_5.png", "sword");
-    farmer->add_wearing("/wearing/hat", "hat", 3);
-    farmer->add_wearing("/wearing/shirt", "shirt", 2);
-    farmer->add_shadow("/shadow/shadow.png");
 
     farmer->setPosition(Vec2(playerInfo.tileX * 16 + 8, playerInfo.tileY * 16 - 8));
 
@@ -95,6 +88,36 @@ bool TownScene::init()
     getMotionManager()->add_movableObject(this);
     //this->go(opposite(playerInfo.faceTo));
 
+    // NPC部分
+    auto abigail = new NPC();
+    abigail->add_part("characters/model/Abigail/walk_down/00.png", "body");
+    abigail->add_shadow("/shadow/shadow.png");
+    abigail->setTiledMap(map);
+    std::vector<std::string> dialogList = { {"Good morning, No_99_Tongji!"}, {"Have you passed CET6?"}, {"Ahh..."} };
+    abigail->add_dialogs(dialogList);
+
+    abigail->setLocalZOrder(1);
+
+    abigail->setPosition(Vec2(615, 835));
+
+    auto Abigail_parts = abigail->get_parts();
+    /*for (auto part : Abigail_parts)
+        this->addChild(part);*/
+    abigail->regist(getMotionManager(), this);
+
+    // NPC部分
+    auto pierre = new Pierre();
+    pierre->add_part("characters/model/Pierre/walk_down/00.png", "body");
+    pierre->setTiledMap(map);
+
+    pierre->setLocalZOrder(1);
+
+    pierre->setPosition(Vec2(500, 500));
+
+    auto Pierre_parts = pierre->get_parts();
+    /*for (auto part : Abigail_parts)
+        this->addChild(part);*/
+    pierre->regist(getMotionManager(), this);
 
     // 建立各传送点
     auto farmTransportPoint = new TeleportPoint(TPMap::FARM, this);
